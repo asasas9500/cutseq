@@ -68,17 +68,17 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
 	cfg->options_number = 0;
-	cfg->options_camera[0] = '\0';
-	cfg->options_input[0] = '\0';
-	cfg->options_output[0] = '\0';
+	strcpy_s(cfg->options_camera, 200, "Camera001");
+	strcpy_s(cfg->options_input, 200, "cutseq.fbx");
+	strcpy_s(cfg->options_output, 200, "cutseq.bin");
 	cfg->options_idx = -1;
-	cfg->lara_name[0] = '\0';
+	strcpy_s(cfg->lara_name, 200, "Lara00");
 	cfg->lara_idx = -1;
 
 	for (int i = 0; i < 9; i++)
 	{
-		cfg->actor_name[i][0] = '\0';
-		cfg->actor_slot[i] = i + 1;
+		strcpy_s(cfg->actor_name[i], 200, "Actor00");
+		cfg->actor_slot[i] = 2 * i + 427;
 	}
 
 	cfg->actor_idx = -1;
