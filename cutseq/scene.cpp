@@ -37,10 +37,55 @@ FbxNodeAttribute* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribut
 	return NULL;
 }
 
+FbxArray<float> EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* channel)
+{
+	FbxAnimCurve* curve;
+	FbxArray<float> data;
+	int count;
+
+	curve = prop->GetCurve(layer, channel);
+
+	if (curve)
+	{
+		count = curve->KeyGetCount();
+
+		for (int i = 0; i < count; i++)
+			data.Add(curve->KeyGetValue(i));
+	}
+
+	return data;
+}
+
+int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
+{
+	for (int i = 0; i < 10; i++)
+		actor[i] = NULL;
+
+	if (cfg->lara_idx >= 0)
+	{
+		actor[0] = FbxCast<FbxMesh>(FindAttribute(root, cfg->lara_name, FbxNodeAttribute::eMesh));
+
+		if (!actor[0])
+			return 0;
+	}
+
+	for (int i = 0; i <= cfg->actor_idx; i++)
+	{
+		actor[i + 1] = FbxCast<FbxMesh>(FindAttribute(root, cfg->actor_name[i], FbxNodeAttribute::eMesh));
+
+		if (!actor[i + 1])
+			return 0;
+	}
+
+	return 1;
+}
+
 void Convert(SETUP_STRUCT* cfg)
 {
 	FbxManager* manager;
 	FbxScene* scene;
+	FbxAnimStack* stack;
+	FbxAnimLayer* layer;
 	FbxNode* root;
 	FbxCamera* cam;
 	FbxMesh* actor[10];
@@ -51,17 +96,23 @@ void Convert(SETUP_STRUCT* cfg)
 
 	if (scene)
 	{
-		root = scene->GetRootNode();
-		cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options_camera, FbxNodeAttribute::eCamera));
+		stack = scene->GetSrcObject<FbxAnimStack>();
 
-		if (cam)
+		if (stack)
 		{
-			actor[0] = cfg->lara_idx >= 0 ? FbxCast<FbxMesh>(FindAttribute(root, cfg->lara_name, FbxNodeAttribute::eMesh)) : NULL;
+			layer = stack->GetSrcObject<FbxAnimLayer>();
 
-			for (int i = 0; i < 9; i++)
-				actor[i + 1] = i <= cfg->actor_idx ? FbxCast<FbxMesh>(FindAttribute(root, cfg->actor_name[i], FbxNodeAttribute::eMesh)) : NULL;
+			if (layer)
+			{
+				root = scene->GetRootNode();
+				cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options_camera, FbxNodeAttribute::eCamera));
+
+				if (cam && FillActorArray(cfg, root, actor))
+				{
 
 
+				}
+			}
 		}
 	}
 
