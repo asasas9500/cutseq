@@ -4,7 +4,7 @@
 
 char* ReadLine(char* buffer, long size, FILE* fp)
 {
-	int c;
+	long c;
 
 	if (fgets(buffer, size, fp))
 	{
