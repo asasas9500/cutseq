@@ -18,4 +18,5 @@ struct SETUP_STRUCT
 char* ReadLine(char* buffer, long size, FILE* fp);
 int ConfigurationHandler(void* data, const char* section, const char* name, const char* value);
 void InitialiseConfiguration(SETUP_STRUCT* cfg);
+int CheckConfiguration(SETUP_STRUCT* cfg);
 int GetConfiguration(SETUP_STRUCT* cfg);

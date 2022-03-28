@@ -67,7 +67,7 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 
 void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
-	cfg->options_number = 0;
+	cfg->options_number = -1;
 	cfg->options_camera[0] = '\0';
 	cfg->options_input[0] = '\0';
 	cfg->options_output[0] = '\0';
@@ -78,10 +78,28 @@ void InitialiseConfiguration(SETUP_STRUCT* cfg)
 	for (int i = 0; i < 9; i++)
 	{
 		cfg->actor_name[i][0] = '\0';
-		cfg->actor_slot[i] = i + 1;
+		cfg->actor_slot[i] = -1;
 	}
 
 	cfg->actor_idx = -1;
+}
+
+int CheckConfiguration(SETUP_STRUCT* cfg)
+{
+	if (cfg->actor_idx > 8)
+		cfg->actor_idx = 8;
+
+	if (cfg->options_idx < 0 || cfg->options_number < 0 || cfg->options_number > 99 || cfg->options_camera[0] == '\0' || cfg->options_input[0] == '\0' ||
+		cfg->options_output[0] == '\0' || (cfg->lara_idx >= 0 && cfg->lara_name[0] == '\0'))
+		return 0;
+
+	for (int i = 0; i <= cfg->actor_idx; i++)
+	{
+		if (cfg->actor_name[i][0] == '\0' || cfg->actor_slot[i] < 1 || cfg->actor_slot[i] > 519)
+			return 0;
+	}
+
+	return 1;
 }
 
 int GetConfiguration(SETUP_STRUCT* cfg)
@@ -95,26 +113,8 @@ int GetConfiguration(SETUP_STRUCT* cfg)
 	{
 		InitialiseConfiguration(cfg);
 
-		if (!ini_parse_stream((ini_reader)ReadLine, fp, ConfigurationHandler, cfg) && cfg->options_idx >= 0)
-		{
-			if (cfg->actor_idx > 8)
-				cfg->actor_idx = 8;
-
-			if (cfg->options_number < 0)
-				cfg->options_number = 0;
-			else if (cfg->options_number > 99)
-				cfg->options_number = 99;
-
-			for (int i = 0; i <= cfg->actor_idx; i++)
-			{
-				if (cfg->actor_slot[i] < 1)
-					cfg->actor_slot[i] = 1;
-				else if (cfg->actor_slot[i] > 519)
-					cfg->actor_slot[i] = 519;
-			}
-
+		if (!ini_parse_stream((ini_reader)ReadLine, fp, ConfigurationHandler, cfg) && CheckConfiguration(cfg))
 			r = 1;
-		}
 
 		fclose(fp);
 	}
