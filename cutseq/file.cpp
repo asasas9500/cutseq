@@ -23,7 +23,7 @@ void FileClose(HANDLE fp)
 
 char ReadChar(HANDLE fp)
 {
-	DWORD bytes;
+	ulong bytes;
 	char value;
 
 	ReadFile(fp, &value, sizeof(char), &bytes, NULL);
@@ -32,7 +32,7 @@ char ReadChar(HANDLE fp)
 
 uchar ReadUChar(HANDLE fp)
 {
-	DWORD bytes;
+	ulong bytes;
 	uchar value;
 
 	ReadFile(fp, &value, sizeof(uchar), &bytes, NULL);
@@ -41,7 +41,7 @@ uchar ReadUChar(HANDLE fp)
 
 short ReadShort(HANDLE fp)
 {
-	DWORD bytes;
+	ulong bytes;
 	short value;
 
 	ReadFile(fp, &value, sizeof(short), &bytes, NULL);
@@ -50,7 +50,7 @@ short ReadShort(HANDLE fp)
 
 ushort ReadUShort(HANDLE fp)
 {
-	DWORD bytes;
+	ulong bytes;
 	ushort value;
 
 	ReadFile(fp, &value, sizeof(ushort), &bytes, NULL);
@@ -59,7 +59,7 @@ ushort ReadUShort(HANDLE fp)
 
 long ReadLong(HANDLE fp)
 {
-	DWORD bytes;
+	ulong bytes;
 	long value;
 
 	ReadFile(fp, &value, sizeof(long), &bytes, NULL);
@@ -68,7 +68,7 @@ long ReadLong(HANDLE fp)
 
 ulong ReadULong(HANDLE fp)
 {
-	DWORD bytes;
+	ulong bytes;
 	ulong value;
 
 	ReadFile(fp, &value, sizeof(ulong), &bytes, NULL);
@@ -77,42 +77,42 @@ ulong ReadULong(HANDLE fp)
 
 void WriteChar(HANDLE fp, char value)
 {
-	DWORD bytes;
+	ulong bytes;
 
 	WriteFile(fp, &value, sizeof(char), &bytes, NULL);
 }
 
 void WriteUChar(HANDLE fp, uchar value)
 {
-	DWORD bytes;
+	ulong bytes;
 
 	WriteFile(fp, &value, sizeof(uchar), &bytes, NULL);
 }
 
 void WriteShort(HANDLE fp, short value)
 {
-	DWORD bytes;
+	ulong bytes;
 
 	WriteFile(fp, &value, sizeof(short), &bytes, NULL);
 }
 
 void WriteUShort(HANDLE fp, ushort value)
 {
-	DWORD bytes;
+	ulong bytes;
 
 	WriteFile(fp, &value, sizeof(ushort), &bytes, NULL);
 }
 
 void WriteLong(HANDLE fp, long value)
 {
-	DWORD bytes;
+	ulong bytes;
 
 	WriteFile(fp, &value, sizeof(long), &bytes, NULL);
 }
 
 void WriteULong(HANDLE fp, ulong value)
 {
-	DWORD bytes;
+	ulong bytes;
 
 	WriteFile(fp, &value, sizeof(ulong), &bytes, NULL);
 }
