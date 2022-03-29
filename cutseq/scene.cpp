@@ -45,15 +45,18 @@ int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char
 	channel->Clear();
 	curve = prop->GetCurve(layer, name);
 
-	if (curve)
-	{
-		count = curve->KeyGetCount();
+	if (!curve)
+		return 0;
 
-		for (int i = 0; i < count; i++)
-		{
-			if (channel->Add(curve->KeyGetValue(i)) == -1)
-				return 0;
-		}
+	count = curve->KeyGetCount();
+
+	if (count < 2)
+		return 0;
+
+	for (int i = 0; i < count; i++)
+	{
+		if (channel->Add(curve->KeyGetValue(i)) == -1)
+			return 0;
 	}
 
 	return 1;
