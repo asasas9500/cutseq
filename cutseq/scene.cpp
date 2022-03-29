@@ -37,11 +37,12 @@ FbxNodeAttribute* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribut
 	return NULL;
 }
 
-void EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel)
+int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel)
 {
 	FbxAnimCurve* curve;
 	long count;
 
+	channel->Clear();
 	curve = prop->GetCurve(layer, name);
 
 	if (curve)
@@ -49,8 +50,13 @@ void EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const cha
 		count = curve->KeyGetCount();
 
 		for (int i = 0; i < count; i++)
-			channel->Add(curve->KeyGetValue(i));
+		{
+			if (channel->Add(curve->KeyGetValue(i)) == -1)
+				return 0;
+		}
 	}
+
+	return 1;
 }
 
 int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
