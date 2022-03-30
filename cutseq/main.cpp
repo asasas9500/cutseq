@@ -5,7 +5,7 @@
 
 int main()
 {
-	static SETUP_STRUCT cfg;
+	SETUP_STRUCT cfg;
 
 	if (GetConfiguration(&cfg))
 		Convert(&cfg);
