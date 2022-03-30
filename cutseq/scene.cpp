@@ -63,24 +63,32 @@ int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char
 
 int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
 {
-	for (int i = 0; i < 10; i++)
-		actor[i] = NULL;
+	long curr;
+
+	curr = 0;
 
 	if (cfg->lara_idx >= 0)
 	{
-		actor[0] = FbxCast<FbxMesh>(FindAttribute(root, cfg->lara_name, FbxNodeAttribute::eMesh));
+		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->lara_name, FbxNodeAttribute::eMesh));
 
-		if (!actor[0])
+		if (!actor[curr])
 			return 0;
+
+		curr++;
 	}
 
 	for (int i = 0; i <= cfg->actor_idx; i++)
 	{
-		actor[i + 1] = FbxCast<FbxMesh>(FindAttribute(root, cfg->actor_name[i], FbxNodeAttribute::eMesh));
+		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->actor_name[i], FbxNodeAttribute::eMesh));
 
-		if (!actor[i + 1])
+		if (!actor[curr])
 			return 0;
+
+		curr++;
 	}
+
+	for (int i = curr; i < 10; i++)
+		actor[i] = NULL;
 
 	return 1;
 }
@@ -259,6 +267,23 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 	return 1;
 }
 
+int Pack(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* player)
+{
+	if (!PackCamera(layer, cam->GetNode(), player))
+		return 0;
+
+	for (int i = 0; i < 10; i++)
+	{
+		if (!actor[i])
+			break;
+
+		if (!PackActor(layer, actor[i]->GetNode(), &player[i + 1]))
+			return 0;
+	}
+
+	return 1;
+}
+
 void Convert(SETUP_STRUCT* cfg)
 {
 	FbxManager* manager;
@@ -268,6 +293,7 @@ void Convert(SETUP_STRUCT* cfg)
 	FbxNode* root;
 	FbxCamera* cam;
 	FbxMesh* actor[10];
+	FRAME_DATA player[11];
 
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
@@ -286,10 +312,18 @@ void Convert(SETUP_STRUCT* cfg)
 				root = scene->GetRootNode();
 				cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options_camera, FbxNodeAttribute::eCamera));
 
-				if (cam && FillActorArray(cfg, root, actor))
+				if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor))
 				{
+					for (int i = 0; i < 11; i++)
+						player[i].header = NULL;
 
+					Pack(layer, cam, actor, player);
 
+					for (int i = 0; i < 11; i++)
+					{
+						if (player[i].header)
+							free(player[i].header);
+					}
 				}
 			}
 		}
