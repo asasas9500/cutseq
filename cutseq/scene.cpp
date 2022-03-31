@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "scene.h"
 
-FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename)
+FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** root)
 {
 	FbxImporter* importer;
 	FbxScene* scene;
 	FbxAnimStack* stack;
+	FbxAnimLayer* layer;
 
 	importer = FbxImporter::Create(manager, "Importer");
 
@@ -18,7 +19,15 @@ FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename)
 			stack = scene->GetSrcObject<FbxAnimStack>();
 
 			if (stack)
-				return stack->GetSrcObject<FbxAnimLayer>();
+			{
+				layer = stack->GetSrcObject<FbxAnimLayer>();
+
+				if (layer)
+				{
+					*root = scene->GetRootNode();
+					return layer;
+				}
+			}
 		}
 	}
 
@@ -307,11 +316,10 @@ int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player)
 	r = 0;
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
-	layer = ImportScene(manager, cfg->options.input);
+	layer = ImportScene(manager, cfg->options.input, &root);
 
 	if (layer)
 	{
-		root = scene->GetRootNode();
 		cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera));
 
 		if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, player))
