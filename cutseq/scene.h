@@ -9,7 +9,7 @@ struct FRAME_DATA
 	FbxArray<uchar> seq;
 };
 
-FbxScene* ImportScene(FbxManager* manager, const char* filename);
+FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename);
 FbxNodeAttribute* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type);
 int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel);
 int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor);
