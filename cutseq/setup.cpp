@@ -2,16 +2,16 @@
 #include "setup.h"
 #include "inih/ini.h"
 
-char* ReadLine(char* buffer, long size, FILE* fp)
+char* ReadLine(char* buf, long size, FILE* fp)
 {
 	long c;
 
-	if (fgets(buffer, size, fp))
+	if (fgets(buf, size, fp))
 	{
-		if (!strchr(buffer, '\n'))
+		if (!strchr(buf, '\n'))
 			do c = fgetc(fp); while (c != EOF && c != '\n');
 
-		return buffer;
+		return buf;
 	}
 
 	return NULL;

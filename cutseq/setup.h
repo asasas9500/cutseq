@@ -30,7 +30,7 @@ struct SETUP_STRUCT
 	ACTOR_SET actor;
 };
 
-char* ReadLine(char* buffer, long size, FILE* fp);
+char* ReadLine(char* buf, long size, FILE* fp);
 int ConfigurationHandler(void* data, const char* section, const char* name, const char* value);
 void InitialiseConfiguration(SETUP_STRUCT* cfg);
 int CheckConfiguration(SETUP_STRUCT* cfg);
