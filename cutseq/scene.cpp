@@ -272,7 +272,7 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 	return 1;
 }
 
-int Pack(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* player)
+int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* player)
 {
 	if (!PackCamera(layer, cam->GetNode(), player))
 		return 0;
@@ -289,7 +289,7 @@ int Pack(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* playe
 	return 1;
 }
 
-void Convert(SETUP_STRUCT* cfg)
+int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player)
 {
 	FbxManager* manager;
 	FbxScene* scene;
@@ -298,8 +298,9 @@ void Convert(SETUP_STRUCT* cfg)
 	FbxNode* root;
 	FbxCamera* cam;
 	FbxMesh* actor[10];
-	FRAME_DATA player[11];
+	int r;
 
+	r = 0;
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
 	scene = ImportScene(manager, cfg->options.input);
@@ -317,22 +318,12 @@ void Convert(SETUP_STRUCT* cfg)
 				root = scene->GetRootNode();
 				cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera));
 
-				if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor))
-				{
-					for (int i = 0; i < 11; i++)
-						player[i].header = NULL;
-
-					Pack(layer, cam, actor, player);
-
-					for (int i = 0; i < 11; i++)
-					{
-						if (player[i].header)
-							free(player[i].header);
-					}
-				}
+				if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, player))
+					r = 1;
 			}
 		}
 	}
 
 	manager->Destroy();
+	return r;
 }
