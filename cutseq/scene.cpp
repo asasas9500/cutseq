@@ -238,6 +238,7 @@ void TransformChannel(float m, FbxArray<float>* channel)
 int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
+	FbxNode* target;
 
 	player->len = 2;
 	player->header = (NODELOADHEADER*)malloc(2 * sizeof(NODELOADHEADER));
@@ -251,17 +252,21 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 	{
 		header->packmethod = 0x3DEF;
 
-		if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.5F, &player->seq, &header->xkey, &header->xlength))
+		if (!i)
+			target = node->GetTarget();
+		else
+			target = node;
+
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.5F, &player->seq, &header->xkey, &header->xlength))
 			return 0;
 
-		if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.5F, &player->seq, &header->ykey, &header->ylength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.5F, &player->seq, &header->ykey, &header->ylength))
 			return 0;
 
-		if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.5F, &player->seq, &header->zkey, &header->zlength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.5F, &player->seq, &header->zkey, &header->zlength))
 			return 0;
 
 		header++;
-		node = node->GetTarget();
 	}
 
 	return 1;
