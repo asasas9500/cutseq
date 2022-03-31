@@ -67,9 +67,9 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
 
 	curr = 0;
 
-	if (cfg->lara_idx >= 0)
+	if (!cfg->lara.idx)
 	{
-		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->lara_name, FbxNodeAttribute::eMesh));
+		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh));
 
 		if (!actor[curr])
 			return 0;
@@ -77,9 +77,9 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
 		curr++;
 	}
 
-	for (int i = 0; i <= cfg->actor_idx; i++)
+	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->actor_name[i], FbxNodeAttribute::eMesh));
+		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->actor.name[i], FbxNodeAttribute::eMesh));
 
 		if (!actor[curr])
 			return 0;
@@ -297,7 +297,7 @@ void Convert(SETUP_STRUCT* cfg)
 
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
-	scene = ImportScene(manager, cfg->options_input);
+	scene = ImportScene(manager, cfg->options.input);
 
 	if (scene)
 	{
@@ -310,7 +310,7 @@ void Convert(SETUP_STRUCT* cfg)
 			if (layer)
 			{
 				root = scene->GetRootNode();
-				cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options_camera, FbxNodeAttribute::eCamera));
+				cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera));
 
 				if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor))
 				{

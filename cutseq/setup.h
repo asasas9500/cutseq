@@ -1,18 +1,33 @@
 #pragma once
 #include "types.h"
 
+struct OPTIONS_SET
+{
+	long number;
+	char camera[200];
+	char input[200];
+	char output[200];
+	long idx;
+};
+
+struct LARA_SET
+{
+	char name[200];
+	long idx;
+};
+
+struct ACTOR_SET
+{
+	char name[9][200];
+	short slot[9];
+	long idx;
+};
+
 struct SETUP_STRUCT
 {
-	long options_number;
-	char options_camera[200];
-	char options_input[200];
-	char options_output[200];
-	long options_idx;
-	char lara_name[200];
-	long lara_idx;
-	char actor_name[9][200];
-	short actor_slot[9];
-	long actor_idx;
+	OPTIONS_SET options;
+	LARA_SET lara;
+	ACTOR_SET actor;
 };
 
 char* ReadLine(char* buffer, long size, FILE* fp);
