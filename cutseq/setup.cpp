@@ -30,13 +30,17 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 			if (name == NULL && value == NULL)
 				cfg->options.idx++;
 			else if (!_stricmp(name, "id"))
-				cfg->options.id = atoi(value);
+				ParseIntegers(value, &cfg->options.id, 1);
 			else if (!_stricmp(name, "camera"))
 				strcpy_s(cfg->options.camera, 200, value);
 			else if (!_stricmp(name, "input"))
 				strcpy_s(cfg->options.input, 200, value);
 			else if (!_stricmp(name, "output"))
 				strcpy_s(cfg->options.output, 200, value);
+			else if (!_stricmp(name, "origin"))
+				ParseIntegers(value, &cfg->options.origin.x, 3);
+			else if (!_stricmp(name, "audio"))
+				ParseIntegers(value, &cfg->options.audio, 1);
 		}
 	}
 	else if (!_stricmp(section, "lara"))
@@ -58,7 +62,7 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 			else if (!_stricmp(name, "name"))
 				strcpy_s(cfg->actor.name[cfg->actor.idx], 200, value);
 			else if (!_stricmp(name, "slot"))
-				cfg->actor.slot[cfg->actor.idx] = atoi(value);
+				ParseIntegers(value, &cfg->actor.slot[cfg->actor.idx], 1);
 		}
 	}
 
@@ -71,6 +75,10 @@ void InitialiseConfiguration(SETUP_STRUCT* cfg)
 	cfg->options.camera[0] = '\0';
 	cfg->options.input[0] = '\0';
 	cfg->options.output[0] = '\0';
+	cfg->options.origin.x = 0x7FFFFFFF;
+	cfg->options.origin.y = 0x7FFFFFFF;
+	cfg->options.origin.z = 0x7FFFFFFF;
+	cfg->options.audio = -1;
 	cfg->options.idx = -1;
 	cfg->lara.name[0] = '\0';
 	cfg->lara.idx = -1;
@@ -96,7 +104,9 @@ int CheckConfiguration(SETUP_STRUCT* cfg)
 		cfg->actor.idx = 8;
 
 	if (cfg->options.idx == -1 || cfg->options.id < 0 || cfg->options.id > 254 || cfg->options.camera[0] == '\0' || cfg->options.input[0] == '\0' ||
-		cfg->options.output[0] == '\0' || (!cfg->lara.idx && cfg->lara.name[0] == '\0'))
+		cfg->options.output[0] == '\0' || cfg->options.origin.x < 0 || cfg->options.origin.x > 131072 || cfg->options.origin.y < -32768 ||
+		cfg->options.origin.y > 32768 || cfg->options.origin.z < 0 || cfg->options.origin.z > 131072 || cfg->options.audio < -1 ||
+		cfg->options.audio > 255 || (!cfg->lara.idx && cfg->lara.name[0] == '\0'))
 		return 0;
 
 	for (int i = 0; i <= cfg->actor.idx; i++)

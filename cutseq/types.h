@@ -4,6 +4,13 @@ typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 
+struct PHD_VECTOR
+{
+	long x;
+	long y;
+	long z;
+};
+
 struct ACTORME
 {
 	long offset;

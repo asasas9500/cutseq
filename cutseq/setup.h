@@ -7,6 +7,8 @@ struct OPTIONS_SET
 	char camera[200];
 	char input[200];
 	char output[200];
+	PHD_VECTOR origin;
+	long audio;
 	long idx;
 };
 
@@ -19,7 +21,7 @@ struct LARA_SET
 struct ACTOR_SET
 {
 	char name[9][200];
-	short slot[9];
+	long slot[9];
 	long idx;
 };
 
