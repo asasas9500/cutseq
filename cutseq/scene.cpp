@@ -82,7 +82,7 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
 
 	curr = 0;
 
-	if (!cfg->lara.idx)
+	if (cfg->lara.idx != -1)
 	{
 		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh));
 

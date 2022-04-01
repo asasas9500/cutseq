@@ -106,7 +106,7 @@ int CheckConfiguration(SETUP_STRUCT* cfg)
 	if (cfg->options.idx == -1 || cfg->options.id < 0 || cfg->options.id > 254 || cfg->options.camera[0] == '\0' || cfg->options.input[0] == '\0' ||
 		cfg->options.output[0] == '\0' || cfg->options.origin.x < 0 || cfg->options.origin.x > 131072 || cfg->options.origin.y < -32768 ||
 		cfg->options.origin.y > 32768 || cfg->options.origin.z < 0 || cfg->options.origin.z > 131072 || cfg->options.audio < -1 ||
-		cfg->options.audio > 255 || (!cfg->lara.idx && cfg->lara.name[0] == '\0'))
+		cfg->options.audio > 255 || (cfg->lara.idx != -1 && cfg->lara.name[0] == '\0'))
 		return 0;
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
