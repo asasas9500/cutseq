@@ -3,7 +3,7 @@
 
 struct OPTIONS_SET
 {
-	long number;
+	long id;
 	char camera[200];
 	char input[200];
 	char output[200];

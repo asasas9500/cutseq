@@ -29,8 +29,8 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 		{
 			if (name == NULL && value == NULL)
 				cfg->options.idx++;
-			else if (!_stricmp(name, "number"))
-				cfg->options.number = atoi(value);
+			else if (!_stricmp(name, "id"))
+				cfg->options.id = atoi(value);
 			else if (!_stricmp(name, "camera"))
 				strcpy_s(cfg->options.camera, 200, value);
 			else if (!_stricmp(name, "input"))
@@ -67,7 +67,7 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 
 void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
-	cfg->options.number = -1;
+	cfg->options.id = -1;
 	cfg->options.camera[0] = '\0';
 	cfg->options.input[0] = '\0';
 	cfg->options.output[0] = '\0';
@@ -95,7 +95,7 @@ int CheckConfiguration(SETUP_STRUCT* cfg)
 	if (cfg->actor.idx > 8)
 		cfg->actor.idx = 8;
 
-	if (cfg->options.idx == -1 || cfg->options.number < 0 || cfg->options.number > 99 || cfg->options.camera[0] == '\0' || cfg->options.input[0] == '\0' ||
+	if (cfg->options.idx == -1 || cfg->options.id < 0 || cfg->options.id > 254 || cfg->options.camera[0] == '\0' || cfg->options.input[0] == '\0' ||
 		cfg->options.output[0] == '\0' || (!cfg->lara.idx && cfg->lara.name[0] == '\0'))
 		return 0;
 
