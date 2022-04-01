@@ -108,6 +108,34 @@ int CheckConfiguration(SETUP_STRUCT* cfg)
 	return 1;
 }
 
+void ParseIntegers(const char* value, long* arr, long len)
+{
+	char* str, * tok, * ctx, * end;
+	long n;
+
+	str = _strdup(value);
+
+	if (str)
+	{
+		tok = strtok_s(str, ",", &ctx);
+
+		for (int i = 0; i < len; i++)
+		{
+			if (!tok)
+				break;
+
+			n = strtol(tok, &end, 10);
+
+			if (*end == '\0')
+				arr[i] = n;
+
+			tok = strtok_s(NULL, ",", &ctx);
+		}
+
+		free(str);
+	}
+}
+
 int GetConfiguration(SETUP_STRUCT* cfg)
 {
 	FILE* fp;
