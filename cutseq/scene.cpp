@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "scene.h"
 
-FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** root)
+FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long* frames)
 {
 	FbxImporter* importer;
 	FbxScene* scene;
@@ -25,6 +25,7 @@ FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** r
 				if (layer)
 				{
 					*root = scene->GetRootNode();
+					*frames = (long)stack->GetLocalTimeSpan().GetDuration().GetFrameCount(FbxTime::eFrames30);
 					return layer;
 				}
 			}
@@ -304,7 +305,7 @@ int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* 
 	return 1;
 }
 
-int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player)
+int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 {
 	FbxManager* manager;
 	FbxAnimLayer* layer;
@@ -316,7 +317,7 @@ int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player)
 	r = 0;
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
-	layer = ImportScene(manager, cfg->options.input, &root);
+	layer = ImportScene(manager, cfg->options.input, &root, frames);
 
 	if (layer)
 	{

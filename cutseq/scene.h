@@ -9,7 +9,7 @@ struct FRAME_DATA
 	FbxArray<uchar> seq;
 };
 
-FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** root);
+FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long* frames);
 FbxNodeAttribute* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type);
 int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel);
 int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor);
@@ -21,4 +21,4 @@ int PackActor(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player);
 void TransformChannel(float m, FbxArray<float>* channel);
 int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player);
 int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* player);
-int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player);
+int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames);
