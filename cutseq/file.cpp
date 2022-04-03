@@ -32,6 +32,16 @@ int ReadULong(HANDLE fp, ulong* value)
 	return 0;
 }
 
+int WriteULong(HANDLE fp, ulong value)
+{
+	ulong bytes;
+
+	if (WriteFile(fp, &value, sizeof(ulong), &bytes, NULL) && bytes == sizeof(ulong))
+		return 1;
+
+	return 0;
+}
+
 int LoadCutsceneList(const char* filename, uchar** buf, ulong* size)
 {
 	HANDLE fp;
@@ -126,21 +136,90 @@ ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, NEW_CU
 	return space;
 }
 
-void RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
+void CopyCutscene(NEW_CUTSCENE* cut, FRAME_DATA* player, uchar* buf)
+{
+	ulong space, off;
+
+	off = sizeof(NEW_CUTSCENE);
+	memcpy(buf, cut, off);
+
+	for (int i = 0; i < 11; i++)
+	{
+		if (!player[i].len)
+			break;
+
+		space = player[i].len * sizeof(NODELOADHEADER);
+		memcpy(&buf[off], player[i].header, space);
+		off += space;
+		space = player[i].seq.Size() * sizeof(uchar);
+		memcpy(&buf[off], player[i].seq.GetArray(), space);
+		off += space;
+	}
+}
+
+int DumpCutsceneList(const char* filename, uchar* buf, ulong size)
+{
+	HANDLE fp;
+	uchar* dest;
+	ulong compressed;
+	int r;
+
+	r = 0;
+	fp = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (fp != INVALID_HANDLE_VALUE)
+	{
+		if (WriteULong(fp, size))
+		{
+			compressed = compressBound(size);
+			dest = (uchar*)malloc(compressed);
+
+			if (dest)
+			{
+				if (compress2(dest, &compressed, buf, size, Z_BEST_COMPRESSION) == Z_OK && WriteUCharBuffer(fp, dest, compressed))
+					r = 1;
+
+				free(dest);
+			}
+		}
+
+		CloseHandle(fp);
+	}
+
+	return r;
+}
+
+int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 {
 	NEW_CUTSCENE cut;
 	ulong* table;
-	uchar* buf;
+	uchar* buf, * ptr;
 	ulong size, space;
+	int r;
 
+	r = 0;
 	space = PrepareCutscene(cfg, player, frames, &cut);
 	buf = NULL;
 
 	if (LoadCutsceneList(cfg->options.output, &buf, &size) && CheckSignature(buf))
 	{
-		table = (ulong*)&buf[8];
+		ptr = (uchar*)realloc(buf, size + space);
+
+		if (ptr)
+		{
+			buf = ptr;
+			table = (ulong*)&buf[8];
+			table[2 * cfg->options.id] = size;
+			table[2 * cfg->options.id + 1] = space;
+			CopyCutscene(&cut, player, &buf[size]);
+
+			if (DumpCutsceneList(cfg->options.output, buf, size + space))
+				r = 1;
+		}
 	}
 
 	if (buf)
 		free(buf);
+
+	return r;
 }
