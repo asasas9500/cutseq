@@ -111,15 +111,17 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
 
 int CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* number)
 {
+	long size;
 	short diff, count;
 
 	*number = 0;
+	size = channel->Size();
 
-	for (int i = 1; i < channel->Size(); i++)
+	for (int i = 1; i < size; i++)
 	{
 		if (!((i - 1) % 16))
 		{
-			count = channel->Size() - i;
+			count = (short)(size - i);
 
 			if (count >= 16)
 				count = 0;
@@ -247,7 +249,11 @@ int PackActor(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 
 void TransformChannel(float m, FbxArray<float>* channel)
 {
-	for (int i = 0; i < channel->Size(); i++)
+	long size;
+
+	size = channel->Size();
+
+	for (int i = 0; i < size; i++)
 		channel->SetAt(i, m * channel->GetAt(i));
 }
 
