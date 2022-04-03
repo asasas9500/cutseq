@@ -136,12 +136,13 @@ ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, NEW_CU
 	return space;
 }
 
-void CopyCutscene(NEW_CUTSCENE* cut, FRAME_DATA* player, uchar* buf)
+void UpdateCutscene(NEW_CUTSCENE* cut, FRAME_DATA* player, uchar* buf, ulong off)
 {
-	ulong space, off;
+	ulong space;
 
-	off = sizeof(NEW_CUTSCENE);
-	memcpy(buf, cut, off);
+	space = sizeof(NEW_CUTSCENE);
+	memcpy(&buf[off], cut, space);
+	off += space;
 
 	for (int i = 0; i < 11; i++)
 	{
@@ -189,12 +190,20 @@ int DumpCutsceneList(const char* filename, uchar* buf, ulong size)
 	return r;
 }
 
+void AdjustTable(long id, ulong space, ulong* table)
+{
+	table[2 * id + 1] = space;
+
+	for (int i = id + 1; i < 255; i++)
+		table[2 * i] = table[2 * i - 2] + table[2 * i - 1];
+}
+
 int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 {
 	NEW_CUTSCENE cut;
 	ulong* table;
 	uchar* buf, * ptr;
-	ulong size, space;
+	ulong size, space, old, off;
 	int r;
 
 	r = 0;
@@ -203,17 +212,31 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 
 	if (LoadCutsceneList(cfg->options.output, &buf, &size) && CheckSignature(buf))
 	{
-		ptr = (uchar*)realloc(buf, size + space);
+		table = (ulong*)&buf[8];
+		old = table[2 * cfg->options.id + 1];
+
+		if (space > old)
+		{
+			size += space - old;
+			ptr = (uchar*)realloc(buf, size);
+		}
+		else
+			ptr = buf;
 
 		if (ptr)
 		{
 			buf = ptr;
-			table = (ulong*)&buf[8];
-			table[2 * cfg->options.id] = size;
-			table[2 * cfg->options.id + 1] = space;
-			CopyCutscene(&cut, player, &buf[size]);
 
-			if (DumpCutsceneList(cfg->options.output, buf, size + space))
+			if (cfg->options.id != 254)
+			{
+				off = table[2 * cfg->options.id + 2];
+				memmove(&buf[off + space - old], &buf[off], size - off);
+			}
+
+			UpdateCutscene(&cut, player, buf, table[2 * cfg->options.id]);
+			AdjustTable(cfg->options.id, space, table);
+
+			if (DumpCutsceneList(cfg->options.output, buf, size))
 				r = 1;
 		}
 	}

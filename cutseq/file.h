@@ -10,6 +10,7 @@ int WriteULong(HANDLE fp, ulong value);
 int LoadCutsceneList(const char* filename, uchar** buf, ulong* size);
 int CheckSignature(uchar* buf);
 ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, NEW_CUTSCENE* cut);
-void CopyCutscene(NEW_CUTSCENE* cut, FRAME_DATA* player, uchar* buf);
+void UpdateCutscene(NEW_CUTSCENE* cut, FRAME_DATA* player, uchar* buf, ulong off);
 int DumpCutsceneList(const char* filename, uchar* buf, ulong size);
+void AdjustTable(long id, ulong space, ulong* table);
 int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames);
