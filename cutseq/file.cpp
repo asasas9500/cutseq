@@ -194,7 +194,7 @@ void AdjustTable(long id, ulong space, ulong* table)
 {
 	table[2 * id + 1] = space;
 
-	for (int i = id + 1; i < 255; i++)
+	for (int i = id + 1; i < 256; i++)
 		table[2 * i] = table[2 * i - 2] + table[2 * i - 1];
 }
 
@@ -212,7 +212,7 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 
 	if (LoadCutsceneList(cfg->options.output, &buf, &size) && CheckSignature(buf))
 	{
-		table = (ulong*)&buf[8];
+		table = (ulong*)buf;
 		old = table[2 * cfg->options.id + 1];
 
 		if (space > old)
