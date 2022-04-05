@@ -160,12 +160,12 @@ int CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* numbe
 int AppendValue(ushort value, long shift, FbxArray<uchar>* seq)
 {
 	if (shift)
-		seq->SetLast(seq->GetLast() | value >> (15 - shift));
+		seq->SetLast(seq->GetLast() | value << (8 - shift));
 
-	if (seq->Add(value >> (7 - shift)) == -1)
+	if (seq->Add(value >> shift) == -1)
 		return 0;
 
-	if (shift != 7 && seq->Add(value << (shift + 1)) == -1)
+	if (shift != 7 && seq->Add(value >> (shift + 8)) == -1)
 		return 0;
 
 	return 1;
