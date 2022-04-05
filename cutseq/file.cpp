@@ -226,6 +226,7 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 		if (ptr)
 		{
 			buf = ptr;
+			table = (ulong*)buf;
 			off = table[2 * cfg->options.id] + space;
 			memmove(&buf[off], &buf[off + old - space], size - off);
 			UpdateCutscene(&cut, player, buf, table[2 * cfg->options.id]);
