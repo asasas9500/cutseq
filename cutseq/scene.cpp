@@ -139,7 +139,7 @@ int CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* numbe
 		else if (diff < -16384)
 			diff = -16384;
 
-		if (!AppendValue(diff & 0x3FFF, *number % 8, seq))
+		if (!AppendValue(diff & 0x7FFF, *number % 8, seq))
 			return 0;
 
 		(*number)++;
