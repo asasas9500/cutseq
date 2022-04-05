@@ -226,13 +226,8 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 		if (ptr)
 		{
 			buf = ptr;
-
-			if (cfg->options.id != 254)
-			{
-				off = table[2 * cfg->options.id + 2];
-				memmove(&buf[off + space - old], &buf[off], size - off);
-			}
-
+			off = table[2 * cfg->options.id] + space;
+			memmove(&buf[off], &buf[off + old - space], size - off);
 			UpdateCutscene(&cut, player, buf, table[2 * cfg->options.id]);
 			AdjustTable(cfg->options.id, space, table);
 
