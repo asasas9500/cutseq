@@ -206,10 +206,10 @@ int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* playe
 	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_X, 2.8444444444F, &player->seq, &header->xkey, &header->xlength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, -2.8444444444F, &player->seq, &header->ykey, &header->ylength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, -2.8444444444F, &player->seq, &header->ykey, &header->ylength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, -2.8444444444F, &player->seq, &header->zkey, &header->zlength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, 2.8444444444F, &player->seq, &header->zkey, &header->zlength))
 		return 0;
 
 	for (int i = 0; i < node->GetChildCount(); i++)
