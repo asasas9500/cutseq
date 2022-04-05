@@ -254,7 +254,7 @@ void TransformChannel(float m, FbxArray<float>* channel)
 	size = channel->Size();
 
 	for (int i = 0; i < size; i++)
-		channel->SetAt(i, m * channel->GetAt(i));
+		channel->SetAt(i, roundf(m * channel->GetAt(i)));
 }
 
 int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
