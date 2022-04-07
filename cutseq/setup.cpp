@@ -146,14 +146,14 @@ void ParseIntegers(const char* value, long* arr, long len)
 	}
 }
 
-int GetConfiguration(SETUP_STRUCT* cfg)
+int GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 {
 	FILE* fp;
 	int r;
 
 	r = 0;
 
-	if (!fopen_s(&fp, "cutseq.txt", "r"))
+	if (!fopen_s(&fp, filename, "r"))
 	{
 		InitialiseConfiguration(cfg);
 

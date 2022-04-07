@@ -37,4 +37,4 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 void InitialiseConfiguration(SETUP_STRUCT* cfg);
 int CheckConfiguration(SETUP_STRUCT* cfg);
 void ParseIntegers(const char* value, long* arr, long len);
-int GetConfiguration(SETUP_STRUCT* cfg);
+int GetConfiguration(const char* filename, SETUP_STRUCT* cfg);

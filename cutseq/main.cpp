@@ -4,13 +4,13 @@
 #include "setup.h"
 #include "file.h"
 
-int main()
+int main(int argc, char** argv)
 {
 	SETUP_STRUCT cfg;
 	FRAME_DATA player[11];
 	long frames;
 
-	if (GetConfiguration(&cfg))
+	if (argc == 2 && GetConfiguration(argv[1], &cfg))
 	{
 		for (int i = 0; i < 11; i++)
 		{
