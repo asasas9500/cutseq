@@ -25,7 +25,7 @@ FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** r
 				if (layer)
 				{
 					*root = scene->GetRootNode();
-					*frames = (long)stack->GetLocalTimeSpan().GetDuration().GetFrameCount(FbxTime::eFrames30);
+					*frames = (long)stack->GetLocalTimeSpan().GetDuration().GetFrameCount(FbxTime::eFrames30) + 1;
 					return layer;
 				}
 			}
@@ -171,11 +171,11 @@ int AppendValue(ushort value, long shift, FbxArray<uchar>* seq)
 	return 1;
 }
 
-int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, FbxArray<uchar>* seq, short* key, short* number)
+int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, FbxArray<uchar>* seq, short* key, short* number)
 {
 	FbxArray<float> channel;
 
-	if (!EvaluatePropertyByChannel(layer, prop, name, &channel))
+	if (!EvaluatePropertyByChannel(layer, prop, name, &channel) || channel.Size() != frames)
 		return 0;
 
 	TransformChannel(m, &channel);
@@ -188,7 +188,7 @@ int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, fl
 	return 1;
 }
 
-int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
+int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 	FbxNode* child;
@@ -203,26 +203,26 @@ int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* playe
 	header = &player->header[player->len - 1];
 	header->packmethod = 0x3DEF;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_X, 2.8444444444F, &player->seq, &header->xkey, &header->xlength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_X, 2.8444444444F, frames, &player->seq, &header->xkey, &header->xlength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, -2.8444444444F, &player->seq, &header->ykey, &header->ylength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, -2.8444444444F, frames, &player->seq, &header->ykey, &header->ylength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, 2.8444444444F, &player->seq, &header->zkey, &header->zlength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, 2.8444444444F, frames, &player->seq, &header->zkey, &header->zlength))
 		return 0;
 
 	for (int i = 0; i < node->GetChildCount(); i++)
 	{
 		child = node->GetChild(i);
-		if (!TraverseActorHierarchy(layer, child, player))
+		if (!TraverseActorHierarchy(layer, child, frames, player))
 			return 0;
 	}
 
 	return 1;
 }
 
-int PackActor(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
+int PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 
@@ -235,16 +235,16 @@ int PackActor(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 	header = player->header;
 	header->packmethod = 0x3DEF;
 
-	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.3333333333F, &player->seq, &header->xkey, &header->xlength))
+	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.3333333333F, frames, &player->seq, &header->xkey, &header->xlength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.3333333333F, &player->seq, &header->ykey, &header->ylength))
+	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.3333333333F, frames, &player->seq, &header->ykey, &header->ylength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.3333333333F, &player->seq, &header->zkey, &header->zlength))
+	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.3333333333F, frames, &player->seq, &header->zkey, &header->zlength))
 		return 0;
 
-	return TraverseActorHierarchy(layer, node, player);
+	return TraverseActorHierarchy(layer, node, frames, player);
 }
 
 void TransformChannel(float m, FbxArray<float>* channel)
@@ -257,7 +257,7 @@ void TransformChannel(float m, FbxArray<float>* channel)
 		channel->SetAt(i, roundf(m * channel->GetAt(i)));
 }
 
-int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
+int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 	FbxNode* target;
@@ -279,13 +279,13 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 		else
 			target = node;
 
-		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.5F, &player->seq, &header->xkey, &header->xlength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.5F, frames, &player->seq, &header->xkey, &header->xlength))
 			return 0;
 
-		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.5F, &player->seq, &header->ykey, &header->ylength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.5F, frames, &player->seq, &header->ykey, &header->ylength))
 			return 0;
 
-		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.5F, &player->seq, &header->zkey, &header->zlength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.5F, frames, &player->seq, &header->zkey, &header->zlength))
 			return 0;
 
 		header++;
@@ -294,9 +294,9 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player)
 	return 1;
 }
 
-int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* player)
+int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames, FRAME_DATA* player)
 {
-	if (!PackCamera(layer, cam->GetNode(), player))
+	if (!PackCamera(layer, cam->GetNode(), frames, player))
 		return 0;
 
 	for (int i = 0; i < 10; i++)
@@ -304,7 +304,7 @@ int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* 
 		if (!actor[i])
 			break;
 
-		if (!PackActor(layer, actor[i]->GetNode(), &player[i + 1]))
+		if (!PackActor(layer, actor[i]->GetNode(), frames, &player[i + 1]))
 			return 0;
 	}
 
@@ -329,7 +329,7 @@ int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 	{
 		cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera));
 
-		if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, player))
+		if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
 			r = 1;
 	}
 

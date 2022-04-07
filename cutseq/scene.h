@@ -15,10 +15,10 @@ int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char
 int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor);
 int CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* number);
 int AppendValue(ushort value, long shift, FbxArray<uchar>* seq);
-int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, FbxArray<uchar>* seq, short* key, short* number);
-int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player);
-int PackActor(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player);
+int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, FbxArray<uchar>* seq, short* key, short* number);
+int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);
+int PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);
 void TransformChannel(float m, FbxArray<float>* channel);
-int PackCamera(FbxAnimLayer* layer, FbxNode* node, FRAME_DATA* player);
-int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, FRAME_DATA* player);
+int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);
+int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames, FRAME_DATA* player);
 int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames);
