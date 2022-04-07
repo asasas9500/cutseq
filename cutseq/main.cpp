@@ -9,6 +9,9 @@ int main(int argc, char** argv)
 	SETUP_STRUCT cfg;
 	FRAME_DATA player[11];
 	long frames;
+	int r;
+
+	r = 0;
 
 	if (argc == 2 && GetConfiguration(argv[1], &cfg))
 	{
@@ -18,8 +21,8 @@ int main(int argc, char** argv)
 			player[i].len = 0;
 		}
 
-		if (ConvertScene(&cfg, player, &frames))
-			RecordCutscene(&cfg, player, frames);
+		if (ConvertScene(&cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
+			r = 1;
 
 		for (int i = 0; i < 11; i++)
 		{
@@ -28,5 +31,5 @@ int main(int argc, char** argv)
 		}
 	}
 
-	return 0;
+	return !r;
 }
