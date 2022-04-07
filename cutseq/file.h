@@ -1,7 +1,5 @@
 #pragma once
 #include "types.h"
-#include "setup.h"
-#include "scene.h"
 
 int ReadUCharBuffer(HANDLE fp, uchar* buf, ulong size);
 int WriteUCharBuffer(HANDLE fp, uchar* buf, ulong size);

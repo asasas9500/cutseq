@@ -40,3 +40,41 @@ struct NODELOADHEADER
 	short ylength;
 	short zlength;
 };
+
+struct OPTIONS_SET
+{
+	long id;
+	char camera[200];
+	char input[200];
+	char output[200];
+	PHD_VECTOR origin;
+	long audio;
+	long idx;
+};
+
+struct LARA_SET
+{
+	char name[200];
+	long idx;
+};
+
+struct ACTOR_SET
+{
+	char name[9][200];
+	long slot[9];
+	long idx;
+};
+
+struct SETUP_STRUCT
+{
+	OPTIONS_SET options;
+	LARA_SET lara;
+	ACTOR_SET actor;
+};
+
+struct FRAME_DATA
+{
+	NODELOADHEADER* header;
+	long len;
+	FbxArray<uchar> seq;
+};

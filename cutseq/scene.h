@@ -1,13 +1,5 @@
 #pragma once
 #include "types.h"
-#include "setup.h"
-
-struct FRAME_DATA
-{
-	NODELOADHEADER* header;
-	long len;
-	FbxArray<uchar> seq;
-};
 
 FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long* frames);
 FbxNodeAttribute* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type);
