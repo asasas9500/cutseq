@@ -315,7 +315,7 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* play
 	return 1;
 }
 
-int PackProperties(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player)
+int PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 
@@ -376,7 +376,7 @@ int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames,
 		curr++;
 	}
 
-	if (!PackProperties(layer, cam, frames, &player[curr]))
+	if (!PackExtensions(layer, cam, frames, &player[curr]))
 		return 0;
 
 	return 1;

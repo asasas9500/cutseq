@@ -13,6 +13,6 @@ int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAM
 int PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);
 void TransformChannel(float m, FbxArray<float>* channel);
 int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);
-int PackProperties(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player);
+int PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player);
 int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames, FRAME_DATA* player);
 int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames);
