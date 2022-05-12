@@ -192,6 +192,7 @@ int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAM
 {
 	NODELOADHEADER* header;
 	FbxNode* child;
+	long count;
 
 	player->len++;
 	header = (NODELOADHEADER*)realloc(player->header, player->len * sizeof(NODELOADHEADER));
@@ -212,7 +213,9 @@ int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAM
 	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, 2.8444444444F, frames, &player->seq, &header->zkey, &header->zlength))
 		return 0;
 
-	for (int i = 0; i < node->GetChildCount(); i++)
+	count = node->GetChildCount();
+
+	for (int i = 0; i < count; i++)
 	{
 		child = node->GetChild(i);
 		if (!TraverseActorHierarchy(layer, child, frames, player))
