@@ -188,6 +188,24 @@ int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, fl
 	return 1;
 }
 
+int ProcessDummyProperty(float a, long frames, FbxArray<uchar>* seq, short* key, short* number)
+{
+	FbxArray<float> channel;
+
+	for (int i = 0; i < frames; i++)
+	{
+		if (channel.Add(a) == -1)
+			return 0;
+	}
+
+	if (!CompressChannel(&channel, seq, number))
+		return 0;
+
+	*key = (short)a;
+
+	return 1;
+}
+
 int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
@@ -297,10 +315,55 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* play
 	return 1;
 }
 
+int PackProperties(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player)
+{
+	NODELOADHEADER* header;
+
+	player->len = 1;
+	player->header = (NODELOADHEADER*)malloc(sizeof(NODELOADHEADER));
+
+	if (!player->header)
+		return 0;
+
+	header = player->header;
+	header->packmethod = 0x3DEF;
+
+	if (cam->Roll.IsAnimated(layer))
+	{
+		if (!ProcessProperty(layer, &cam->Roll, NULL, 2.8444444444F, frames, &player->seq, &header->xkey, &header->xlength))
+			return 0;
+	}
+	else
+	{
+		if (!ProcessDummyProperty(0, frames, &player->seq, &header->xkey, &header->xlength))
+			return 0;
+	}
+
+	if (cam->FieldOfView.IsAnimated(layer))
+	{
+		if (!ProcessProperty(layer, &cam->FieldOfView, NULL, 2.8444444444F, frames, &player->seq, &header->ykey, &header->ylength))
+			return 0;
+	}
+	else
+	{
+		if (!ProcessDummyProperty(80, frames, &player->seq, &header->ykey, &header->ylength))
+			return 0;
+	}
+
+	if (!ProcessDummyProperty(0, frames, &player->seq, &header->zkey, &header->zlength))
+		return 0;
+
+	return 1;
+}
+
 int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames, FRAME_DATA* player)
 {
+	long curr;
+
 	if (!PackCamera(layer, cam->GetNode(), frames, player))
 		return 0;
+
+	curr = 1;
 
 	for (int i = 0; i < 10; i++)
 	{
@@ -309,7 +372,12 @@ int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames,
 
 		if (!PackActor(layer, actor[i]->GetNode(), frames, &player[i + 1]))
 			return 0;
+
+		curr++;
 	}
+
+	if (!PackProperties(layer, cam, frames, &player[curr]))
+		return 0;
 
 	return 1;
 }

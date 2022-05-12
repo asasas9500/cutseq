@@ -7,7 +7,7 @@
 int main(int argc, char** argv)
 {
 	SETUP_STRUCT cfg;
-	FRAME_DATA player[11];
+	FRAME_DATA player[12];
 	long frames;
 	int r;
 
@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
 	if (argc == 2 && GetConfiguration(argv[1], &cfg))
 	{
-		for (int i = 0; i < 11; i++)
+		for (int i = 0; i < 12; i++)
 		{
 			player[i].header = NULL;
 			player[i].len = 0;
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 		if (ConvertScene(&cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
 			r = 1;
 
-		for (int i = 0; i < 11; i++)
+		for (int i = 0; i < 12; i++)
 		{
 			if (player[i].header)
 				free(player[i].header);

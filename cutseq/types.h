@@ -28,6 +28,7 @@ struct NEW_CUTSCENE
 	long audio_track;
 	long camera_offset;
 	ACTORME actor_data[10];
+	long properties;
 };
 
 struct NODELOADHEADER

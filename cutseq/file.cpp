@@ -134,6 +134,10 @@ ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, NEW_CU
 		cut->actor_data[i + 1].nodes = -1;
 	}
 
+	curr++;
+	cut->properties = space;
+	space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
+
 	return space;
 }
 
