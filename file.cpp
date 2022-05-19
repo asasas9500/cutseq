@@ -87,11 +87,13 @@ int CheckSignature(uchar* buf)
 	return 0;
 }
 
-ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, NEW_CUTSCENE* cut)
+ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCENE_DESCRIPTOR* cd)
 {
+	NEW_CUTSCENE* cut;
 	long curr;
 	ulong space;
 
+	cut = &cd->cut;
 	cut->numactors = (short)(cfg->actor.idx + 2);
 	cut->numframes = (short)frames;
 	cut->orgx = cfg->options.origin.x;
@@ -135,18 +137,18 @@ ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, NEW_CU
 	}
 
 	curr++;
-	cut->extensions = space;
+	cd->ext = space;
 	space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
 
 	return space;
 }
 
-void UpdateCutscene(NEW_CUTSCENE* cut, FRAME_DATA* player, uchar* buf, ulong off)
+void UpdateCutscene(CUTSCENE_DESCRIPTOR* cd, FRAME_DATA* player, uchar* buf, ulong off)
 {
 	ulong space;
 
-	space = sizeof(NEW_CUTSCENE);
-	memcpy(&buf[off], cut, space);
+	space = sizeof(CUTSCENE_DESCRIPTOR);
+	memcpy(&buf[off], cd, space);
 	off += space;
 
 	for (int i = 0; i < 11; i++)
@@ -205,14 +207,14 @@ void AdjustTable(long id, ulong space, ulong* table)
 
 int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 {
-	NEW_CUTSCENE cut;
+	CUTSCENE_DESCRIPTOR cd;
 	ulong* table;
 	uchar* buf, * ptr;
 	ulong size, space, old, off;
 	int r;
 
 	r = 0;
-	space = PrepareCutscene(cfg, player, frames, &cut);
+	space = PrepareCutscene(cfg, player, frames, &cd);
 	buf = NULL;
 
 	if (LoadCutsceneList(cfg->options.output, &buf, &size) && CheckSignature(buf))
@@ -234,7 +236,7 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 			table = (ulong*)buf;
 			off = table[2 * cfg->options.id] + space;
 			memmove(&buf[off], &buf[off + old - space], size - off);
-			UpdateCutscene(&cut, player, buf, table[2 * cfg->options.id]);
+			UpdateCutscene(&cd, player, buf, table[2 * cfg->options.id]);
 			AdjustTable(cfg->options.id, space, table);
 
 			if (DumpCutsceneList(cfg->options.output, buf, size))

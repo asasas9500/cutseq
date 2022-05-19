@@ -28,7 +28,6 @@ struct NEW_CUTSCENE
 	long audio_track;
 	long camera_offset;
 	ACTORME actor_data[10];
-	long extensions;
 };
 
 struct NODELOADHEADER
@@ -78,4 +77,10 @@ struct FRAME_DATA
 	NODELOADHEADER* header;
 	long len;
 	FbxArray<uchar> seq;
+};
+
+struct CUTSCENE_DESCRIPTOR
+{
+	NEW_CUTSCENE cut;
+	long ext;
 };
