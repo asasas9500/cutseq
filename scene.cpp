@@ -270,12 +270,32 @@ int PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* playe
 
 void TransformChannel(float m, FbxArray<float>* channel)
 {
+	float x, y;
 	long size;
 
 	size = channel->Size();
 
 	for (int i = 0; i < size; i++)
-		channel->SetAt(i, roundf(m * channel->GetAt(i)));
+	{
+		x = m * channel->GetAt(i);
+
+		if (x >= 0)
+		{
+			y = floorf(x);
+
+			if (x - y >= 0.5F)
+				y += 1;
+		}
+		else
+		{
+			y = ceilf(x);
+
+			if (x - y <= -0.5F)
+				y -= 1;
+		}
+
+		channel->SetAt(i, y);
+	}
 }
 
 int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
