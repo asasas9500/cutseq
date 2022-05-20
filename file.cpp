@@ -100,7 +100,7 @@ ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCE
 	cut->orgy = cfg->options.origin.y;
 	cut->orgz = cfg->options.origin.z;
 	cut->audio_track = cfg->options.audio;
-	space = sizeof(NEW_CUTSCENE);
+	space = sizeof(CUTSCENE_DESCRIPTOR);
 	curr = 0;
 	cut->camera_offset = space;
 	space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
