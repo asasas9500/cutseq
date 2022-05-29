@@ -209,7 +209,8 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 {
 	CUTSCENE_DESCRIPTOR cd;
 	ulong* table;
-	uchar* buf, * ptr;
+	uchar* buf;
+	uchar* ptr;
 	ulong size, space, old, off;
 	int r;
 

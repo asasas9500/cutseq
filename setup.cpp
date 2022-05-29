@@ -120,7 +120,10 @@ int CheckConfiguration(SETUP_STRUCT* cfg)
 
 void ParseIntegers(const char* value, long* arr, long len)
 {
-	char* str, * tok, * ctx, * end;
+	char* str;
+	char* tok;
+	char* ctx;
+	char* end;
 	long n;
 
 	str = _strdup(value);
