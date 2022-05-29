@@ -350,7 +350,7 @@ int PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA*
 
 	if (cam->Roll.IsAnimated(layer))
 	{
-		if (!ProcessProperty(layer, &cam->Roll, NULL, 2.8444444444F, frames, &player->seq, &header->xkey, &header->xlength))
+		if (!ProcessProperty(layer, &cam->Roll, NULL, -2.8444444444F, frames, &player->seq, &header->xkey, &header->xlength))
 			return 0;
 	}
 	else
