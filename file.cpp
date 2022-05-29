@@ -215,12 +215,12 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	int r;
 
 	r = 0;
-	space = PrepareCutscene(cfg, player, frames, &cd);
 	buf = NULL;
 
 	if (LoadCutsceneList(cfg->options.output, &buf, &size) && CheckSignature(buf))
 	{
 		table = (ulong*)buf;
+		space = PrepareCutscene(cfg, player, frames, &cd);
 		old = table[2 * cfg->options.id + 1];
 		size += space - old;
 
