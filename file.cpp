@@ -221,12 +221,10 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	{
 		table = (ulong*)buf;
 		old = table[2 * cfg->options.id + 1];
+		size += space - old;
 
 		if (space > old)
-		{
-			size += space - old;
 			ptr = (uchar*)realloc(buf, size);
-		}
 		else
 			ptr = buf;
 
