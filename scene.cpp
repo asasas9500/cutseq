@@ -361,12 +361,12 @@ int PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA*
 
 	if (cam->FieldOfView.IsAnimated(layer))
 	{
-		if (!ProcessProperty(layer, &cam->FieldOfView, NULL, 2.8444444444F, frames, &player->seq, &header->ykey, &header->ylength))
+		if (!ProcessProperty(layer, &cam->FieldOfView, NULL, 182, frames, &player->seq, &header->ykey, &header->ylength))
 			return 0;
 	}
 	else
 	{
-		if (!ProcessDummyProperty(80, frames, &player->seq, &header->ykey, &header->ylength))
+		if (!ProcessDummyProperty(11488, frames, &player->seq, &header->ykey, &header->ylength))
 			return 0;
 	}
 
