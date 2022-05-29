@@ -35,7 +35,7 @@ FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** r
 	return NULL;
 }
 
-FbxNodeAttribute* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type)
+FbxNode* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type)
 {
 	FbxNode* node;
 	FbxNodeAttribute* attr;
@@ -47,7 +47,7 @@ FbxNodeAttribute* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribut
 		attr = node->GetNodeAttribute();
 
 		if (attr && attr->GetAttributeType() == type)
-			return attr;
+			return node;
 	}
 
 	return NULL;
@@ -77,7 +77,7 @@ int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char
 	return 1;
 }
 
-int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
+int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 {
 	long curr;
 
@@ -85,7 +85,7 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
 
 	if (cfg->lara.idx != -1)
 	{
-		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh));
+		actor[curr] = FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh);
 
 		if (!actor[curr])
 			return 0;
@@ -95,7 +95,7 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxMesh** actor)
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		actor[curr] = FbxCast<FbxMesh>(FindAttribute(root, cfg->actor.name[i], FbxNodeAttribute::eMesh));
+		actor[curr] = FindAttribute(root, cfg->actor.name[i], FbxNodeAttribute::eMesh);
 
 		if (!actor[curr])
 			return 0;
@@ -376,11 +376,11 @@ int PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA*
 	return 1;
 }
 
-int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames, FRAME_DATA* player)
+int PackScene(FbxAnimLayer* layer, FbxNode* cam, FbxNode** actor, long frames, FRAME_DATA* player)
 {
 	long curr;
 
-	if (!PackCamera(layer, cam->GetNode(), frames, player))
+	if (!PackCamera(layer, cam, frames, player))
 		return 0;
 
 	curr = 1;
@@ -390,13 +390,13 @@ int PackScene(FbxAnimLayer* layer, FbxCamera* cam, FbxMesh** actor, long frames,
 		if (!actor[i])
 			break;
 
-		if (!PackActor(layer, actor[i]->GetNode(), frames, &player[i + 1]))
+		if (!PackActor(layer, actor[i], frames, &player[i + 1]))
 			return 0;
 
 		curr++;
 	}
 
-	if (!PackExtensions(layer, cam, frames, &player[curr]))
+	if (!PackExtensions(layer, FbxCast<FbxCamera>(cam->GetNodeAttribute()), frames, &player[curr]))
 		return 0;
 
 	return 1;
@@ -407,8 +407,8 @@ int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 	FbxManager* manager;
 	FbxAnimLayer* layer;
 	FbxNode* root;
-	FbxCamera* cam;
-	FbxMesh* actor[10];
+	FbxNode* cam;
+	FbxNode* actor[10];
 	int r;
 
 	r = 0;
@@ -418,9 +418,9 @@ int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 
 	if (layer)
 	{
-		cam = FbxCast<FbxCamera>(FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera));
+		cam = FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera);
 
-		if (cam && cam->GetNode()->GetTarget() && FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
+		if (cam && cam->GetTarget() && FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
 			r = 1;
 	}
 
