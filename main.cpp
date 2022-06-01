@@ -25,10 +25,7 @@ int main(int argc, char** argv)
 			r = 1;
 
 		for (int i = 0; i < 12; i++)
-		{
-			if (player[i].header)
-				free(player[i].header);
-		}
+			free(player[i].header);
 	}
 
 	return !r;

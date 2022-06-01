@@ -243,8 +243,6 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 		}
 	}
 
-	if (buf)
-		free(buf);
-
+	free(buf);
 	return r;
 }
