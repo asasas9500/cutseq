@@ -96,10 +96,10 @@ ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCE
 	cut = &cd->cut;
 	cut->numactors = (short)(cfg->actor.idx + 2);
 	cut->numframes = (short)frames;
-	cut->orgx = cfg->options.origin.x;
-	cut->orgy = cfg->options.origin.y;
-	cut->orgz = cfg->options.origin.z;
-	cut->audio_track = cfg->options.audio;
+	cut->orgx = cfg->options.origin->x;
+	cut->orgy = cfg->options.origin->y;
+	cut->orgz = cfg->options.origin->z;
+	cut->audio_track = *cfg->options.audio;
 	space = sizeof(CUTSCENE_DESCRIPTOR);
 	curr = 0;
 	cut->camera_offset = space;
@@ -124,7 +124,7 @@ ulong PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCE
 	{
 		curr++;
 		cut->actor_data[i + 1].offset = space;
-		cut->actor_data[i + 1].objslot = (short)cfg->actor.slot[i];
+		cut->actor_data[i + 1].objslot = (short)*cfg->actor.slot[i];
 		cut->actor_data[i + 1].nodes = (short)(player[curr].len - 1);
 		space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
 	}
@@ -212,6 +212,7 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	uchar* buf;
 	uchar* ptr;
 	ulong size, space, old, off;
+	long id;
 	int r;
 
 	r = 0;
@@ -221,7 +222,8 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	{
 		table = (ulong*)buf;
 		space = PrepareCutscene(cfg, player, frames, &cd);
-		old = table[2 * cfg->options.id + 1];
+		id = *cfg->options.id;
+		old = table[2 * id + 1];
 		size += space - old;
 
 		if (space > old)
@@ -233,10 +235,10 @@ int RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 		{
 			buf = ptr;
 			table = (ulong*)buf;
-			off = table[2 * cfg->options.id] + space;
+			off = table[2 * id] + space;
 			memmove(&buf[off], &buf[off + old - space], size - off);
-			UpdateCutscene(&cd, player, buf, table[2 * cfg->options.id]);
-			AdjustTable(cfg->options.id, space, table);
+			UpdateCutscene(&cd, player, buf, table[2 * id]);
+			AdjustTable(id, space, table);
 
 			if (DumpCutsceneList(cfg->options.output, buf, size))
 				r = 1;

@@ -30,17 +30,65 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 			if (name == NULL && value == NULL)
 				cfg->options.idx++;
 			else if (!_stricmp(name, "id"))
-				ParseIntegers(value, &cfg->options.id, 1);
+			{
+				if (!cfg->options.id)
+				{
+					cfg->options.id = (long*)malloc(sizeof(long));
+
+					if (!cfg->options.id || !ParseIntegers(value, cfg->options.id, 1))
+						return 0;
+				}
+			}
 			else if (!_stricmp(name, "camera"))
-				strcpy_s(cfg->options.camera, 200, value);
+			{
+				if (!cfg->options.camera)
+				{
+					cfg->options.camera = _strdup(value);
+
+					if (!cfg->options.camera)
+						return 0;
+				}
+			}
 			else if (!_stricmp(name, "input"))
-				strcpy_s(cfg->options.input, 200, value);
+			{
+				if (!cfg->options.input)
+				{
+					cfg->options.input = _strdup(value);
+
+					if (!cfg->options.input)
+						return 0;
+				}
+			}
 			else if (!_stricmp(name, "output"))
-				strcpy_s(cfg->options.output, 200, value);
+			{
+				if (!cfg->options.output)
+				{
+					cfg->options.output = _strdup(value);
+
+					if (!cfg->options.output)
+						return 0;
+				}
+			}
 			else if (!_stricmp(name, "origin"))
-				ParseIntegers(value, &cfg->options.origin.x, 3);
+			{
+				if (!cfg->options.origin)
+				{
+					cfg->options.origin = (PHD_VECTOR*)malloc(sizeof(PHD_VECTOR));
+
+					if (!cfg->options.origin || !ParseIntegers(value, (long*)cfg->options.origin, 3))
+						return 0;
+				}
+			}
 			else if (!_stricmp(name, "audio"))
-				ParseIntegers(value, &cfg->options.audio, 1);
+			{
+				if (!cfg->options.audio)
+				{
+					cfg->options.audio = (long*)malloc(sizeof(long));
+
+					if (!cfg->options.audio || !ParseIntegers(value, cfg->options.audio, 1))
+						return 0;
+				}
+			}
 		}
 	}
 	else if (!_stricmp(section, "lara"))
@@ -50,7 +98,15 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 			if (name == NULL && value == NULL)
 				cfg->lara.idx++;
 			else if (!_stricmp(name, "name"))
-				strcpy_s(cfg->lara.name, 200, value);
+			{
+				if (!cfg->lara.name)
+				{
+					cfg->lara.name = _strdup(value);
+
+					if (!cfg->lara.name)
+						return 0;
+				}
+			}
 		}
 	}
 	else if (!_stricmp(section, "actor"))
@@ -60,9 +116,25 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 			if (name == NULL && value == NULL)
 				cfg->actor.idx++;
 			else if (!_stricmp(name, "name"))
-				strcpy_s(cfg->actor.name[cfg->actor.idx], 200, value);
+			{
+				if (!cfg->actor.name[cfg->actor.idx])
+				{
+					cfg->actor.name[cfg->actor.idx] = _strdup(value);
+
+					if (!cfg->actor.name[cfg->actor.idx])
+						return 0;
+				}
+			}
 			else if (!_stricmp(name, "slot"))
-				ParseIntegers(value, &cfg->actor.slot[cfg->actor.idx], 1);
+			{
+				if (!cfg->actor.slot[cfg->actor.idx])
+				{
+					cfg->actor.slot[cfg->actor.idx] = (long*)malloc(sizeof(long));
+
+					if (!cfg->actor.slot[cfg->actor.idx] || !ParseIntegers(value, cfg->actor.slot[cfg->actor.idx], 1))
+						return 0;
+				}
+			}
 		}
 	}
 
@@ -71,22 +143,20 @@ int ConfigurationHandler(void* data, const char* section, const char* name, cons
 
 void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
-	cfg->options.id = -1;
-	cfg->options.camera[0] = '\0';
-	cfg->options.input[0] = '\0';
-	cfg->options.output[0] = '\0';
-	cfg->options.origin.x = 0x7FFFFFFF;
-	cfg->options.origin.y = 0x7FFFFFFF;
-	cfg->options.origin.z = 0x7FFFFFFF;
-	cfg->options.audio = -1;
+	cfg->options.id = NULL;
+	cfg->options.camera = NULL;
+	cfg->options.input = NULL;
+	cfg->options.output = NULL;
+	cfg->options.origin = NULL;
+	cfg->options.audio = NULL;
 	cfg->options.idx = -1;
-	cfg->lara.name[0] = '\0';
+	cfg->lara.name = NULL;
 	cfg->lara.idx = -1;
 
 	for (int i = 0; i < 9; i++)
 	{
-		cfg->actor.name[i][0] = '\0';
-		cfg->actor.slot[i] = -1;
+		cfg->actor.name[i] = NULL;
+		cfg->actor.slot[i] = NULL;
 	}
 
 	cfg->actor.idx = -1;
@@ -103,29 +173,33 @@ int CheckConfiguration(SETUP_STRUCT* cfg)
 	if (cfg->actor.idx > 8)
 		cfg->actor.idx = 8;
 
-	if (cfg->options.idx == -1 || cfg->options.id < 1 || cfg->options.id > 255 || cfg->options.camera[0] == '\0' || cfg->options.input[0] == '\0' ||
-		cfg->options.output[0] == '\0' || cfg->options.origin.x < 0 || cfg->options.origin.x > 131072 || cfg->options.origin.y < -32768 ||
-		cfg->options.origin.y > 32768 || cfg->options.origin.z < 0 || cfg->options.origin.z > 131072 || cfg->options.audio < -1 ||
-		cfg->options.audio > 255 || (cfg->lara.idx != -1 && cfg->lara.name[0] == '\0'))
+	if (cfg->options.idx == -1 || !cfg->options.id || *cfg->options.id < 1 || *cfg->options.id > 255 || !cfg->options.camera ||
+		cfg->options.camera[0] == '\0' || !cfg->options.input || cfg->options.input[0] == '\0' || !cfg->options.output ||
+		cfg->options.output[0] == '\0' || !cfg->options.origin || cfg->options.origin->x < 0 || cfg->options.origin->x > 131072 ||
+		cfg->options.origin->y < -32768 || cfg->options.origin->y > 32768 || cfg->options.origin->z < 0 ||
+		cfg->options.origin->z > 131072 || !cfg->options.audio || *cfg->options.audio < -1 || *cfg->options.audio > 255 ||
+		cfg->lara.idx != -1 && (!cfg->lara.name || cfg->lara.name[0] == '\0'))
 		return 0;
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		if (cfg->actor.name[i][0] == '\0' || cfg->actor.slot[i] < 1 || cfg->actor.slot[i] > 519)
+		if (!cfg->actor.name[i] || cfg->actor.name[i][0] == '\0' || !cfg->actor.slot[i] || *cfg->actor.slot[i] < 1 || *cfg->actor.slot[i] > 519)
 			return 0;
 	}
 
 	return 1;
 }
 
-void ParseIntegers(const char* value, long* arr, long len)
+int ParseIntegers(const char* value, long* arr, long len)
 {
 	char* str;
 	char* tok;
 	char* ctx;
 	char* end;
 	long n;
+	int r;
 
+	r = 1;
 	str = _strdup(value);
 
 	if (str)
@@ -135,18 +209,29 @@ void ParseIntegers(const char* value, long* arr, long len)
 		for (int i = 0; i < len; i++)
 		{
 			if (!tok)
+			{
+				r = 0;
 				break;
+			}
 
 			n = strtol(tok, &end, 10);
 
-			if (*end == '\0')
-				arr[i] = n;
+			if (*end != '\0')
+			{
+				r = 0;
+				break;
+			}
 
+			arr[i] = n;
 			tok = strtok_s(NULL, ",", &ctx);
 		}
 
 		free(str);
 	}
+	else
+		r = 0;
+
+	return r;
 }
 
 int GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
@@ -156,10 +241,10 @@ int GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 
 	r = 0;
 
+	InitialiseConfiguration(cfg);
+
 	if (!fopen_s(&fp, filename, "r"))
 	{
-		InitialiseConfiguration(cfg);
-
 		if (!ini_parse_stream((ini_reader)ReadLine, fp, ConfigurationHandler, cfg) && CheckConfiguration(cfg))
 			r = 1;
 

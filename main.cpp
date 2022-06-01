@@ -24,6 +24,20 @@ int main(int argc, char** argv)
 		if (ConvertScene(&cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
 			r = 1;
 
+		free(cfg.options.id);
+		free(cfg.options.camera);
+		free(cfg.options.input);
+		free(cfg.options.output);
+		free(cfg.options.origin);
+		free(cfg.options.audio);
+		free(cfg.lara.name);
+
+		for (int i = 0; i < 9; i++)
+		{
+			free(cfg.actor.name[i]);
+			free(cfg.actor.slot[i]);
+		}
+
 		for (int i = 0; i < 12; i++)
 			free(player[i].header);
 	}
