@@ -234,6 +234,23 @@ int ParseIntegers(const char* value, long* arr, long len)
 	return r;
 }
 
+void FreeConfiguration(SETUP_STRUCT* cfg)
+{
+	free(cfg->options.id);
+	free(cfg->options.camera);
+	free(cfg->options.input);
+	free(cfg->options.output);
+	free(cfg->options.origin);
+	free(cfg->options.audio);
+	free(cfg->lara.name);
+
+	for (int i = 0; i < 9; i++)
+	{
+		free(cfg->actor.name[i]);
+		free(cfg->actor.slot[i]);
+	}
+}
+
 int GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 {
 	FILE* fp;

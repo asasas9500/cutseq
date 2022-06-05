@@ -13,33 +13,24 @@ int main(int argc, char** argv)
 
 	r = 0;
 
-	if (argc == 2 && GetConfiguration(argv[1], &cfg))
+	if (argc == 2)
 	{
-		for (int i = 0; i < 12; i++)
+		if (GetConfiguration(argv[1], &cfg))
 		{
-			player[i].header = NULL;
-			player[i].len = 0;
+			for (int i = 0; i < 12; i++)
+			{
+				player[i].header = NULL;
+				player[i].len = 0;
+			}
+
+			if (ConvertScene(&cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
+				r = 1;
+
+			for (int i = 0; i < 12; i++)
+				free(player[i].header);
 		}
 
-		if (ConvertScene(&cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
-			r = 1;
-
-		free(cfg.options.id);
-		free(cfg.options.camera);
-		free(cfg.options.input);
-		free(cfg.options.output);
-		free(cfg.options.origin);
-		free(cfg.options.audio);
-		free(cfg.lara.name);
-
-		for (int i = 0; i < 9; i++)
-		{
-			free(cfg.actor.name[i]);
-			free(cfg.actor.slot[i]);
-		}
-
-		for (int i = 0; i < 12; i++)
-			free(player[i].header);
+		FreeConfiguration(&cfg);
 	}
 
 	return !r;
