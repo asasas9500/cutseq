@@ -1,12 +1,11 @@
 #include "stdafx.h"
 #include "scene.h"
 
-FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long* frames)
+long ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long* frames, FbxAnimLayer** layer)
 {
 	FbxImporter* importer;
 	FbxScene* scene;
 	FbxAnimStack* stack;
-	FbxAnimLayer* layer;
 
 	importer = FbxImporter::Create(manager, "Importer");
 
@@ -16,44 +15,45 @@ FbxAnimLayer* ImportScene(FbxManager* manager, const char* filename, FbxNode** r
 
 		if (importer->Import(scene))
 		{
+			*root = scene->GetRootNode();
 			stack = scene->GetSrcObject<FbxAnimStack>();
 
 			if (stack)
 			{
-				layer = stack->GetSrcObject<FbxAnimLayer>();
+				*frames = (long)stack->GetLocalTimeSpan().GetDuration().GetFrameCount(FbxTime::eFrames30) + 1;
 
-				if (layer)
+				if (*frames >= 2)
 				{
-					*root = scene->GetRootNode();
-					*frames = (long)stack->GetLocalTimeSpan().GetDuration().GetFrameCount(FbxTime::eFrames30) + 1;
-					return layer;
+					*layer = stack->GetSrcObject<FbxAnimLayer>();
+
+					if (*layer)
+						return 1;
 				}
 			}
 		}
 	}
 
-	return NULL;
+	return 0;
 }
 
-FbxNode* FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type)
+long FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type, FbxNode** node)
 {
-	FbxNode* node;
 	FbxNodeAttribute* attr;
 
-	node = root->FindChild(name);
+	*node = root->FindChild(name);
 
-	if (node)
+	if (*node)
 	{
-		attr = node->GetNodeAttribute();
+		attr = (*node)->GetNodeAttribute();
 
 		if (attr && attr->GetAttributeType() == type)
-			return node;
+			return 1;
 	}
 
-	return NULL;
+	return 0;
 }
 
-int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel)
+long EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel)
 {
 	FbxAnimCurve* curve;
 	long count;
@@ -77,7 +77,7 @@ int EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char
 	return 1;
 }
 
-int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
+long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 {
 	long curr;
 
@@ -85,9 +85,7 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 
 	if (cfg->lara.idx != -1)
 	{
-		actor[curr] = FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh);
-
-		if (!actor[curr])
+		if (!FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh, &actor[curr]))
 			return 0;
 
 		curr++;
@@ -95,9 +93,7 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		actor[curr] = FindAttribute(root, cfg->actor.name[i], FbxNodeAttribute::eMesh);
-
-		if (!actor[curr])
+		if (!FindAttribute(root, cfg->actor.name[i], FbxNodeAttribute::eMesh, &actor[curr]))
 			return 0;
 
 		curr++;
@@ -109,7 +105,7 @@ int FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 	return 1;
 }
 
-int CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* number)
+long CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* number)
 {
 	long size;
 	short diff, count;
@@ -157,7 +153,7 @@ int CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* numbe
 	return 1;
 }
 
-int AppendValue(ushort value, long shift, FbxArray<uchar>* seq)
+long AppendValue(ushort value, long shift, FbxArray<uchar>* seq)
 {
 	if (shift)
 		seq->SetLast(seq->GetLast() | value << (8 - shift));
@@ -171,7 +167,7 @@ int AppendValue(ushort value, long shift, FbxArray<uchar>* seq)
 	return 1;
 }
 
-int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, FbxArray<uchar>* seq, short* key, short* number)
+long ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, FbxArray<uchar>* seq, short* key, short* number)
 {
 	FbxArray<float> channel;
 
@@ -188,7 +184,7 @@ int ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, fl
 	return 1;
 }
 
-int ProcessDummyProperty(float a, long frames, FbxArray<uchar>* seq, short* key, short* number)
+long ProcessDummyProperty(float a, long frames, FbxArray<uchar>* seq, short* key, short* number)
 {
 	FbxArray<float> channel;
 
@@ -206,7 +202,7 @@ int ProcessDummyProperty(float a, long frames, FbxArray<uchar>* seq, short* key,
 	return 1;
 }
 
-int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
+long TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 	FbxNode* child;
@@ -243,7 +239,7 @@ int TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAM
 	return 1;
 }
 
-int PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
+long PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 
@@ -298,7 +294,7 @@ void TransformChannel(float m, FbxArray<float>* channel)
 	}
 }
 
-int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
+long PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 	FbxNode* target;
@@ -335,7 +331,7 @@ int PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* play
 	return 1;
 }
 
-int PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player)
+long PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 
@@ -376,7 +372,7 @@ int PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA*
 	return 1;
 }
 
-int PackScene(FbxAnimLayer* layer, FbxNode* cam, FbxNode** actor, long frames, FRAME_DATA* player)
+long PackScene(FbxAnimLayer* layer, FbxNode* cam, FbxNode** actor, long frames, FRAME_DATA* player)
 {
 	long curr;
 
@@ -402,27 +398,23 @@ int PackScene(FbxAnimLayer* layer, FbxNode* cam, FbxNode** actor, long frames, F
 	return 1;
 }
 
-int ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
+long ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 {
 	FbxManager* manager;
 	FbxAnimLayer* layer;
 	FbxNode* root;
 	FbxNode* cam;
 	FbxNode* actor[10];
-	int r;
+	long r;
 
 	r = 0;
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
-	layer = ImportScene(manager, cfg->options.input, &root, frames);
 
-	if (layer)
-	{
-		cam = FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera);
-
-		if (cam && cam->GetTarget() && FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
-			r = 1;
-	}
+	if (ImportScene(manager, cfg->options.input, &root, frames, &layer) &&
+		FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera, &cam) && cam->GetTarget() &&
+		FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
+		r = 1;
 
 	manager->Destroy();
 	return r;

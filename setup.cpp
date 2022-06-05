@@ -17,7 +17,7 @@ char* ReadLine(char* buf, long size, FILE* fp)
 	return NULL;
 }
 
-int ConfigurationHandler(void* data, const char* section, const char* name, const char* value)
+long ConfigurationHandler(void* data, const char* section, const char* name, const char* value)
 {
 	SETUP_STRUCT* cfg;
 
@@ -162,7 +162,7 @@ void InitialiseConfiguration(SETUP_STRUCT* cfg)
 	cfg->actor.idx = -1;
 }
 
-int CheckConfiguration(SETUP_STRUCT* cfg)
+long CheckConfiguration(SETUP_STRUCT* cfg)
 {
 	if (cfg->options.idx > 0)
 		cfg->options.idx = 0;
@@ -190,14 +190,13 @@ int CheckConfiguration(SETUP_STRUCT* cfg)
 	return 1;
 }
 
-int ParseIntegers(const char* value, long* arr, long len)
+long ParseIntegers(const char* value, long* arr, long len)
 {
 	char* str;
 	char* tok;
 	char* ctx;
 	char* end;
-	long n;
-	int r;
+	long n, r;
 
 	r = 1;
 	str = _strdup(value);
@@ -251,10 +250,10 @@ void FreeConfiguration(SETUP_STRUCT* cfg)
 	}
 }
 
-int GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
+long GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 {
 	FILE* fp;
-	int r;
+	long r;
 
 	r = 0;
 
@@ -262,7 +261,7 @@ int GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 
 	if (!fopen_s(&fp, filename, "r"))
 	{
-		if (!ini_parse_stream((ini_reader)ReadLine, fp, ConfigurationHandler, cfg) && CheckConfiguration(cfg))
+		if (!ini_parse_stream((ini_reader)ReadLine, fp, (ini_handler)ConfigurationHandler, cfg) && CheckConfiguration(cfg))
 			r = 1;
 
 		fclose(fp);

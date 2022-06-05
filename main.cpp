@@ -8,8 +8,7 @@ int main(int argc, char** argv)
 {
 	SETUP_STRUCT cfg;
 	FRAME_DATA player[12];
-	long frames;
-	int r;
+	long frames, r;
 
 	r = 0;
 

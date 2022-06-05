@@ -2,9 +2,9 @@
 #include "types.h"
 
 char* ReadLine(char* buf, long size, FILE* fp);
-int ConfigurationHandler(void* data, const char* section, const char* name, const char* value);
+long ConfigurationHandler(void* data, const char* section, const char* name, const char* value);
 void InitialiseConfiguration(SETUP_STRUCT* cfg);
-int CheckConfiguration(SETUP_STRUCT* cfg);
-int ParseIntegers(const char* value, long* arr, long len);
+long CheckConfiguration(SETUP_STRUCT* cfg);
+long ParseIntegers(const char* value, long* arr, long len);
 void FreeConfiguration(SETUP_STRUCT* cfg);
-int GetConfiguration(const char* filename, SETUP_STRUCT* cfg);
+long GetConfiguration(const char* filename, SETUP_STRUCT* cfg);
