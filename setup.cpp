@@ -255,14 +255,20 @@ long GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 	FILE* fp;
 	long r;
 
-	r = 0;
-
 	InitialiseConfiguration(cfg);
+	r = 2;
 
 	if (!fopen_s(&fp, filename, "r"))
 	{
-		if (!ini_parse_stream((ini_reader)ReadLine, fp, (ini_handler)ConfigurationHandler, cfg) && CheckConfiguration(cfg))
-			r = 1;
+		r = 3;
+
+		if (!ini_parse_stream((ini_reader)ReadLine, fp, (ini_handler)ConfigurationHandler, cfg))
+		{
+			r = 4;
+
+			if (CheckConfiguration(cfg))
+				r = 0;
+		}
 
 		fclose(fp);
 	}

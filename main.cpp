@@ -10,11 +10,13 @@ int main(int argc, char** argv)
 	FRAME_DATA player[12];
 	long frames, r;
 
-	r = 0;
+	r = 1;
 
 	if (argc == 2)
 	{
-		if (GetConfiguration(argv[1], &cfg))
+		r = GetConfiguration(argv[1], &cfg);
+
+		if (!r)
 		{
 			for (int i = 0; i < 12; i++)
 			{
@@ -22,8 +24,10 @@ int main(int argc, char** argv)
 				player[i].len = 0;
 			}
 
-			if (ConvertScene(&cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
-				r = 1;
+			r = ConvertScene(&cfg, player, &frames);
+
+			if (!r)
+				r = RecordCutscene(&cfg, player, frames);
 
 			for (int i = 0; i < 12; i++)
 				free(player[i].header);
@@ -32,5 +36,5 @@ int main(int argc, char** argv)
 		FreeConfiguration(&cfg);
 	}
 
-	return !r;
+	return r;
 }
