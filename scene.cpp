@@ -53,24 +53,20 @@ long FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type
 	return 0;
 }
 
-long EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel)
+long EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, long frames, FbxArray<float>* channel)
 {
 	FbxAnimCurve* curve;
-	long count;
+	FbxTime time;
 
 	curve = prop->GetCurve(layer, name);
 
 	if (!curve)
 		return 0;
 
-	count = curve->KeyGetCount();
-
-	if (count < 2)
-		return 0;
-
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < frames; i++)
 	{
-		if (channel->Add(curve->KeyGetValue(i)) == -1)
+		time.SetFrame(i, FbxTime::eFrames30);
+		if (channel->Add(curve->Evaluate(time)) == -1)
 			return 0;
 	}
 
@@ -171,7 +167,7 @@ long ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, f
 {
 	FbxArray<float> channel;
 
-	if (!EvaluatePropertyByChannel(layer, prop, name, &channel) || channel.Size() != frames)
+	if (!EvaluatePropertyByChannel(layer, prop, name, frames, &channel))
 		return 0;
 
 	TransformChannel(m, &channel);

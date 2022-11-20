@@ -3,7 +3,7 @@
 
 long ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long* frames, FbxAnimLayer** layer);
 long FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type, FbxNode** node);
-long EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, FbxArray<float>* channel);
+long EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, long frames, FbxArray<float>* channel);
 long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor);
 long CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* number);
 long AppendValue(ushort value, long shift, FbxArray<uchar>* seq);
