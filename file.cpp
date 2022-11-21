@@ -211,8 +211,8 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	ulong size, space, old, off;
 	long id, r;
 
+	r = 0;
 	buf = NULL;
-	r = 8;
 
 	if (LoadCutsceneList(cfg->options.output, &buf, &size) && CheckSignature(buf))
 	{
@@ -227,8 +227,6 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 		else
 			ptr = buf;
 
-		r = 9;
-
 		if (ptr)
 		{
 			buf = ptr;
@@ -239,7 +237,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 			AdjustTable(id, space, table);
 
 			if (DumpCutsceneList(cfg->options.output, buf, size))
-				r = 0;
+				r = 1;
 		}
 	}
 

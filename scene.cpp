@@ -403,22 +403,14 @@ long ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 	FbxNode* actor[10];
 	long r;
 
+	r = 0;
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
-	r = 5;
 
-	if (ImportScene(manager, cfg->options.input, &root, frames, &layer))
-	{
-		r = 6;
-
-		if (FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera, &cam) && cam->GetTarget() && FillActorArray(cfg, root, actor))
-		{
-			r = 7;
-
-			if (PackScene(layer, cam, actor, *frames, player))
-				r = 0;
-		}
-	}
+	if (ImportScene(manager, cfg->options.input, &root, frames, &layer) &&
+		FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera, &cam) && cam->GetTarget() &&
+		FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
+		r = 1;
 
 	manager->Destroy();
 	return r;
