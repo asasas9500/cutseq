@@ -43,7 +43,7 @@ struct NODELOADHEADER
 
 struct OPTIONS_SET
 {
-	long* id;
+	long* number;
 	char* camera;
 	char* input;
 	char* output;

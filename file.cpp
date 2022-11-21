@@ -194,11 +194,11 @@ long DumpCutsceneList(const char* filename, uchar* buf, ulong size)
 	return r;
 }
 
-void AdjustTable(long id, ulong space, ulong* table)
+void AdjustTable(long number, ulong space, ulong* table)
 {
-	table[2 * id + 1] = space;
+	table[2 * number + 1] = space;
 
-	for (int i = id + 1; i < 256; i++)
+	for (int i = number + 1; i < 256; i++)
 		table[2 * i] = table[2 * i - 2] + table[2 * i - 1];
 }
 
@@ -209,7 +209,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	uchar* buf;
 	uchar* ptr;
 	ulong size, space, old, off;
-	long id, r;
+	long number, r;
 
 	r = 0;
 	buf = NULL;
@@ -218,8 +218,8 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	{
 		table = (ulong*)buf;
 		PrepareCutscene(cfg, player, frames, &cd, &space);
-		id = *cfg->options.id;
-		old = table[2 * id + 1];
+		number = *cfg->options.number;
+		old = table[2 * number + 1];
 		size += space - old;
 
 		if (space > old)
@@ -231,10 +231,10 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 		{
 			buf = ptr;
 			table = (ulong*)buf;
-			off = table[2 * id] + space;
+			off = table[2 * number] + space;
 			memmove(&buf[off], &buf[off + old - space], size - off);
-			UpdateCutscene(&cd, player, buf, table[2 * id]);
-			AdjustTable(id, space, table);
+			UpdateCutscene(&cd, player, buf, table[2 * number]);
+			AdjustTable(number, space, table);
 
 			if (DumpCutsceneList(cfg->options.output, buf, size))
 				r = 1;

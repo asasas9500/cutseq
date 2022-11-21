@@ -29,13 +29,13 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 		{
 			if (name == NULL && value == NULL)
 				cfg->options.idx++;
-			else if (!_stricmp(name, "id"))
+			else if (!_stricmp(name, "number"))
 			{
-				if (!cfg->options.id)
+				if (!cfg->options.number)
 				{
-					cfg->options.id = (long*)malloc(sizeof(long));
+					cfg->options.number = (long*)malloc(sizeof(long));
 
-					if (!cfg->options.id || !ParseIntegers(value, cfg->options.id, 1))
+					if (!cfg->options.number || !ParseIntegers(value, cfg->options.number, 1))
 						return 0;
 				}
 			}
@@ -143,7 +143,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 
 void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
-	cfg->options.id = NULL;
+	cfg->options.number = NULL;
 	cfg->options.camera = NULL;
 	cfg->options.input = NULL;
 	cfg->options.output = NULL;
@@ -173,7 +173,7 @@ long CheckConfiguration(SETUP_STRUCT* cfg)
 	if (cfg->actor.idx > 8)
 		cfg->actor.idx = 8;
 
-	if (cfg->options.idx == -1 || !cfg->options.id || *cfg->options.id < 1 || *cfg->options.id > 255 || !cfg->options.camera ||
+	if (cfg->options.idx == -1 || !cfg->options.number || *cfg->options.number < 1 || *cfg->options.number > 255 || !cfg->options.camera ||
 		cfg->options.camera[0] == '\0' || !cfg->options.input || cfg->options.input[0] == '\0' || !cfg->options.output ||
 		cfg->options.output[0] == '\0' || !cfg->options.origin || cfg->options.origin->x < 0 || cfg->options.origin->x > 131072 ||
 		cfg->options.origin->y < -32768 || cfg->options.origin->y > 32768 || cfg->options.origin->z < 0 ||
@@ -235,7 +235,7 @@ long ParseIntegers(const char* value, long* arr, long len)
 
 void FreeConfiguration(SETUP_STRUCT* cfg)
 {
-	free(cfg->options.id);
+	free(cfg->options.number);
 	free(cfg->options.camera);
 	free(cfg->options.input);
 	free(cfg->options.output);
