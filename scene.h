@@ -7,7 +7,7 @@ long EvaluatePropertyByChannel(FbxAnimLayer* layer, FbxProperty* prop, const cha
 long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor);
 long CompressChannel(FbxArray<float>* channel, FbxArray<uchar>* seq, short* number);
 long AppendValue(ushort value, long shift, FbxArray<uchar>* seq);
-long ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, FbxArray<uchar>* seq, short* key, short* number);
+long ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, long mask, FbxArray<uchar>* seq, short* key, short* number);
 long ProcessDummyProperty(float a, long frames, FbxArray<uchar>* seq, short* key, short* number);
 long TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);
 long PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);

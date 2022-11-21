@@ -163,7 +163,7 @@ long AppendValue(ushort value, long shift, FbxArray<uchar>* seq)
 	return 1;
 }
 
-long ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, FbxArray<uchar>* seq, short* key, short* number)
+long ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float m, long frames, long mask, FbxArray<uchar>* seq, short* key, short* number)
 {
 	FbxArray<float> channel;
 
@@ -175,7 +175,7 @@ long ProcessProperty(FbxAnimLayer* layer, FbxProperty* prop, const char* name, f
 	if (!CompressChannel(&channel, seq, number))
 		return 0;
 
-	*key = (short)channel.GetAt(0);
+	*key = (short)channel.GetAt(0) & mask;
 
 	return 1;
 }
@@ -214,13 +214,13 @@ long TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRA
 	header = &player->header[player->len - 1];
 	header->packmethod = 0x3DEF;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_X, 2.8444444444F, frames, &player->seq, &header->xkey, &header->xlength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_X, 2.8444444444F, frames, 0x3FF, &player->seq, &header->xkey, &header->xlength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, -2.8444444444F, frames, &player->seq, &header->ykey, &header->ylength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, -2.8444444444F, frames, 0x3FF, &player->seq, &header->ykey, &header->ylength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, 2.8444444444F, frames, &player->seq, &header->zkey, &header->zlength))
+	if (!ProcessProperty(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, 2.8444444444F, frames, 0x3FF, &player->seq, &header->zkey, &header->zlength))
 		return 0;
 
 	count = node->GetChildCount();
@@ -248,13 +248,13 @@ long PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* play
 	header = player->header;
 	header->packmethod = 0x3DEF;
 
-	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.3333333333F, frames, &player->seq, &header->xkey, &header->xlength))
+	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.3333333333F, frames, 0xFFFF, &player->seq, &header->xkey, &header->xlength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.3333333333F, frames, &player->seq, &header->ykey, &header->ylength))
+	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.3333333333F, frames, 0xFFFF, &player->seq, &header->ykey, &header->ylength))
 		return 0;
 
-	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.3333333333F, frames, &player->seq, &header->zkey, &header->zlength))
+	if (!ProcessProperty(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.3333333333F, frames, 0xFFFF, &player->seq, &header->zkey, &header->zlength))
 		return 0;
 
 	return TraverseActorHierarchy(layer, node, frames, player);
@@ -312,13 +312,13 @@ long PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* pla
 		else
 			target = node;
 
-		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.5F, frames, &player->seq, &header->xkey, &header->xlength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, 0.5F, frames, 0xFFFF, &player->seq, &header->xkey, &header->xlength))
 			return 0;
 
-		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.5F, frames, &player->seq, &header->ykey, &header->ylength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, -0.5F, frames, 0xFFFF, &player->seq, &header->ykey, &header->ylength))
 			return 0;
 
-		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.5F, frames, &player->seq, &header->zkey, &header->zlength))
+		if (!ProcessProperty(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, -0.5F, frames, 0xFFFF, &player->seq, &header->zkey, &header->zlength))
 			return 0;
 
 		header++;
@@ -342,7 +342,7 @@ long PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA
 
 	if (cam->Roll.IsAnimated(layer))
 	{
-		if (!ProcessProperty(layer, &cam->Roll, NULL, -2.8444444444F, frames, &player->seq, &header->xkey, &header->xlength))
+		if (!ProcessProperty(layer, &cam->Roll, NULL, -2.8444444444F, frames, 0xFFFF, &player->seq, &header->xkey, &header->xlength))
 			return 0;
 	}
 	else
@@ -353,7 +353,7 @@ long PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA
 
 	if (cam->FieldOfView.IsAnimated(layer))
 	{
-		if (!ProcessProperty(layer, &cam->FieldOfView, NULL, 182, frames, &player->seq, &header->ykey, &header->ylength))
+		if (!ProcessProperty(layer, &cam->FieldOfView, NULL, 182, frames, 0xFFFF, &player->seq, &header->ykey, &header->ylength))
 			return 0;
 	}
 	else
