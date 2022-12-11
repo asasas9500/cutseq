@@ -19,6 +19,7 @@ long ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long
 
 		if (importer->Import(scene))
 		{
+			FbxAxisSystem::Max.ConvertScene(scene);
 			*root = scene->GetRootNode();
 			stack = scene->GetSrcObject<FbxAnimStack>();
 
