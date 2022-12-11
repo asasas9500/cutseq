@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="euler_angle\EulerAngles.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="inih\ini.h" />
     <ClInclude Include="main.h" />
@@ -88,6 +89,10 @@
     <ClInclude Include="zlib\zlib.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="euler_angle\EulerAngles.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="file.cpp" />
     <ClCompile Include="inih\ini.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
