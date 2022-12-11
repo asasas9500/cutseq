@@ -45,7 +45,7 @@ long FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type
 {
 	FbxNodeAttribute* attr;
 
-	*node = root->FindChild(name);
+	*node = root->FindChild(name, false);
 
 	if (*node)
 	{
