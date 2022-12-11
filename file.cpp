@@ -214,7 +214,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	r = 0;
 	buf = NULL;
 
-	if (LoadCutsceneList(cfg->options.output, &buf, &size) && CheckSignature(buf))
+	if (LoadCutsceneList("cutseq.pak", &buf, &size) && CheckSignature(buf))
 	{
 		table = (ulong*)buf;
 		PrepareCutscene(cfg, player, frames, &cd, &space);
@@ -236,7 +236,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 			UpdateCutscene(&cd, player, buf, table[2 * number]);
 			AdjustTable(number, space, table);
 
-			if (DumpCutsceneList(cfg->options.output, buf, size))
+			if (DumpCutsceneList("cutseq.pak", buf, size))
 				r = 1;
 		}
 	}
