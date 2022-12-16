@@ -450,7 +450,7 @@ long PackScene(FbxAnimLayer* layer, FbxNode* cam, FbxNode** actor, long frames, 
 	return 1;
 }
 
-long ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
+long ConvertScene(const char* filename, SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 {
 	FbxManager* manager;
 	FbxAnimLayer* layer;
@@ -458,12 +458,15 @@ long ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames)
 	FbxNode* cam;
 	FbxNode* actor[10];
 	long r;
+	char input[MAX_PATH];
 
 	r = 0;
 	manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
+	strcpy_s(input, MAX_PATH, filename);
+	PathRenameExtension(input, ".fbx");
 
-	if (ImportScene(manager, cfg->options.input, &root, frames, &layer) &&
+	if (ImportScene(manager, input, &root, frames, &layer) &&
 		FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera, &cam) && cam->GetTarget() &&
 		FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
 		r = 1;

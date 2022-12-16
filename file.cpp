@@ -210,11 +210,15 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	uchar* ptr;
 	ulong size, space, old, off;
 	long number, r;
+	char output[MAX_PATH];
 
 	r = 0;
+	GetModuleFileName(NULL, output, MAX_PATH);
+	PathRemoveFileSpec(output);
+	PathAppend(output, "cutseq.pak");
 	buf = NULL;
 
-	if (LoadCutsceneList("cutseq.pak", &buf, &size) && CheckSignature(buf))
+	if (LoadCutsceneList(output, &buf, &size) && CheckSignature(buf))
 	{
 		table = (ulong*)buf;
 		PrepareCutscene(cfg, player, frames, &cd, &space);
@@ -236,7 +240,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 			UpdateCutscene(&cd, player, buf, table[2 * number]);
 			AdjustTable(number, space, table);
 
-			if (DumpCutsceneList("cutseq.pak", buf, size))
+			if (DumpCutsceneList(output, buf, size))
 				r = 1;
 		}
 	}

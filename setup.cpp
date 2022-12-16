@@ -49,16 +49,6 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 						return 0;
 				}
 			}
-			else if (!_stricmp(name, "input"))
-			{
-				if (!cfg->options.input)
-				{
-					cfg->options.input = _strdup(value);
-
-					if (!cfg->options.input)
-						return 0;
-				}
-			}
 			else if (!_stricmp(name, "origin"))
 			{
 				if (!cfg->options.origin)
@@ -135,7 +125,6 @@ void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
 	cfg->options.number = NULL;
 	cfg->options.camera = NULL;
-	cfg->options.input = NULL;
 	cfg->options.origin = NULL;
 	cfg->options.audio = NULL;
 	cfg->options.idx = -1;
@@ -163,8 +152,7 @@ long CheckConfiguration(SETUP_STRUCT* cfg)
 		cfg->actor.idx = 8;
 
 	if (cfg->options.idx == -1 || !cfg->options.number || *cfg->options.number < 1 || *cfg->options.number > 255 || !cfg->options.camera ||
-		cfg->options.camera[0] == '\0' || !cfg->options.input || cfg->options.input[0] == '\0' ||
-		!cfg->options.origin || cfg->options.origin->x < 0 || cfg->options.origin->x > 131072 ||
+		cfg->options.camera[0] == '\0' || !cfg->options.origin || cfg->options.origin->x < 0 || cfg->options.origin->x > 131072 ||
 		cfg->options.origin->y < -32768 || cfg->options.origin->y > 32768 || cfg->options.origin->z < 0 ||
 		cfg->options.origin->z > 131072 || !cfg->options.audio || *cfg->options.audio < -1 || *cfg->options.audio > 255 ||
 		cfg->lara.idx != -1 && (!cfg->lara.name || cfg->lara.name[0] == '\0'))
@@ -226,7 +214,6 @@ void FreeConfiguration(SETUP_STRUCT* cfg)
 {
 	free(cfg->options.number);
 	free(cfg->options.camera);
-	free(cfg->options.input);
 	free(cfg->options.origin);
 	free(cfg->options.audio);
 	free(cfg->lara.name);

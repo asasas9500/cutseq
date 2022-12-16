@@ -45,7 +45,6 @@ struct OPTIONS_SET
 {
 	long* number;
 	char* camera;
-	char* input;
 	PHD_VECTOR* origin;
 	long* audio;
 	long idx;

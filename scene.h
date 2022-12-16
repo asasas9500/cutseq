@@ -17,4 +17,4 @@ void TransformChannel(float m, long frames, float* channel);
 long PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player);
 long PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA* player);
 long PackScene(FbxAnimLayer* layer, FbxNode* cam, FbxNode** actor, long frames, FRAME_DATA* player);
-long ConvertScene(SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames);
+long ConvertScene(const char* filename, SETUP_STRUCT* cfg, FRAME_DATA* player, long* frames);
