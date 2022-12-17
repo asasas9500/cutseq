@@ -35,7 +35,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.number = (long*)malloc(sizeof(long));
 
-					if (!cfg->options.number || !ParseIntegers(value, cfg->options.number, 1))
+					if (!cfg->options.number || !ParseIntegers(value, cfg->options.number, 1) || *cfg->options.number < 1 || *cfg->options.number > 255)
 						return 0;
 				}
 			}
@@ -45,7 +45,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.camera = _strdup(value);
 
-					if (!cfg->options.camera)
+					if (!cfg->options.camera || cfg->options.camera[0] == '\0')
 						return 0;
 				}
 			}
@@ -55,7 +55,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.origin = (PHD_VECTOR*)malloc(sizeof(PHD_VECTOR));
 
-					if (!cfg->options.origin || !ParseIntegers(value, (long*)cfg->options.origin, 3))
+					if (!cfg->options.origin || !ParseIntegers(value, (long*)cfg->options.origin, 3) || cfg->options.origin->x < 0 || cfg->options.origin->x > 131071 || cfg->options.origin->y < -32768 || cfg->options.origin->y > 32767 || cfg->options.origin->z < 0 || cfg->options.origin->z > 131071)
 						return 0;
 				}
 			}
@@ -65,7 +65,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.audio = (long*)malloc(sizeof(long));
 
-					if (!cfg->options.audio || !ParseIntegers(value, cfg->options.audio, 1))
+					if (!cfg->options.audio || !ParseIntegers(value, cfg->options.audio, 1) || *cfg->options.audio < 0 || *cfg->options.audio > 255)
 						return 0;
 				}
 			}
@@ -83,7 +83,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->lara.name = _strdup(value);
 
-					if (!cfg->lara.name)
+					if (!cfg->lara.name || cfg->lara.name[0] == '\0')
 						return 0;
 				}
 			}
@@ -101,7 +101,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->actor.name[cfg->actor.idx] = _strdup(value);
 
-					if (!cfg->actor.name[cfg->actor.idx])
+					if (!cfg->actor.name[cfg->actor.idx] || cfg->actor.name[cfg->actor.idx][0] == '\0')
 						return 0;
 				}
 			}
@@ -111,7 +111,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->actor.slot[cfg->actor.idx] = (long*)malloc(sizeof(long));
 
-					if (!cfg->actor.slot[cfg->actor.idx] || !ParseIntegers(value, cfg->actor.slot[cfg->actor.idx], 1))
+					if (!cfg->actor.slot[cfg->actor.idx] || !ParseIntegers(value, cfg->actor.slot[cfg->actor.idx], 1) || *cfg->actor.slot[cfg->actor.idx] < 1 || *cfg->actor.slot[cfg->actor.idx] > 519)
 						return 0;
 				}
 			}
@@ -151,16 +151,12 @@ long CheckConfiguration(SETUP_STRUCT* cfg)
 	if (cfg->actor.idx > 8)
 		cfg->actor.idx = 8;
 
-	if (cfg->options.idx == -1 || !cfg->options.number || *cfg->options.number < 1 || *cfg->options.number > 255 || !cfg->options.camera ||
-		cfg->options.camera[0] == '\0' || !cfg->options.origin || cfg->options.origin->x < 0 || cfg->options.origin->x > 131072 ||
-		cfg->options.origin->y < -32768 || cfg->options.origin->y > 32768 || cfg->options.origin->z < 0 ||
-		cfg->options.origin->z > 131072 || !cfg->options.audio || *cfg->options.audio < -1 || *cfg->options.audio > 255 ||
-		cfg->lara.idx != -1 && (!cfg->lara.name || cfg->lara.name[0] == '\0'))
+	if (cfg->options.idx == -1 || !cfg->options.number || !cfg->options.camera || cfg->lara.idx != -1 && !cfg->lara.name)
 		return 0;
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		if (!cfg->actor.name[i] || cfg->actor.name[i][0] == '\0' || !cfg->actor.slot[i] || *cfg->actor.slot[i] < 1 || *cfg->actor.slot[i] > 519)
+		if (!cfg->actor.name[i] || !cfg->actor.slot[i])
 			return 0;
 	}
 

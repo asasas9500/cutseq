@@ -95,10 +95,25 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 	cut = &cd->cut;
 	cut->numactors = (short)(cfg->actor.idx + 2);
 	cut->numframes = (short)frames;
-	cut->orgx = cfg->options.origin->x;
-	cut->orgy = cfg->options.origin->y;
-	cut->orgz = cfg->options.origin->z;
-	cut->audio_track = *cfg->options.audio;
+
+	if (cfg->options.origin)
+	{
+		cut->orgx = cfg->options.origin->x;
+		cut->orgy = cfg->options.origin->y;
+		cut->orgz = cfg->options.origin->z;
+	}
+	else
+	{
+		cut->orgx = 0;
+		cut->orgy = 0;
+		cut->orgz = 0;
+	}
+
+	if (cfg->options.audio)
+		cut->audio_track = *cfg->options.audio;
+	else
+		cut->audio_track = -1;
+
 	*space = sizeof(CUTSCENE_DESCRIPTOR);
 	curr = 0;
 	cut->camera_offset = *space;
