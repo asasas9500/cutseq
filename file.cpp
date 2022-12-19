@@ -2,44 +2,32 @@
 #include "file.h"
 #include "zlib/zlib.h"
 
-long ReadUCharBuffer(HANDLE fp, uchar* buf, ulong size)
+void ReadUCharBuffer(HANDLE fp, uchar* buf, ulong size)
 {
 	ulong bytes;
 
-	if (ReadFile(fp, buf, size, &bytes, NULL) && bytes == size)
-		return 1;
-
-	return 0;
+	ReadFile(fp, buf, size, &bytes, NULL);
 }
 
-long WriteUCharBuffer(HANDLE fp, uchar* buf, ulong size)
+void WriteUCharBuffer(HANDLE fp, uchar* buf, ulong size)
 {
 	ulong bytes;
 
-	if (WriteFile(fp, buf, size, &bytes, NULL) && bytes == size)
-		return 1;
-
-	return 0;
+	WriteFile(fp, buf, size, &bytes, NULL);
 }
 
-long ReadULong(HANDLE fp, ulong* value)
+void ReadULong(HANDLE fp, ulong* value)
 {
 	ulong bytes;
 
-	if (ReadFile(fp, value, sizeof(ulong), &bytes, NULL) && bytes == sizeof(ulong))
-		return 1;
-
-	return 0;
+	ReadFile(fp, value, sizeof(ulong), &bytes, NULL);
 }
 
-long WriteULong(HANDLE fp, ulong value)
+void WriteULong(HANDLE fp, ulong value)
 {
 	ulong bytes;
 
-	if (WriteFile(fp, &value, sizeof(ulong), &bytes, NULL) && bytes == sizeof(ulong))
-		return 1;
-
-	return 0;
+	WriteFile(fp, &value, sizeof(ulong), &bytes, NULL);
 }
 
 long LoadCutsceneList(const char* filename, uchar** buf, ulong* size)
@@ -54,22 +42,22 @@ long LoadCutsceneList(const char* filename, uchar** buf, ulong* size)
 
 	if (fp != INVALID_HANDLE_VALUE)
 	{
-		if (ReadULong(fp, size))
+		ReadULong(fp, size);
+		*buf = (uchar*)malloc(*size);
+
+		if (*buf)
 		{
-			*buf = (uchar*)malloc(*size);
+			compressed = GetFileSize(fp, NULL) - 4;
+			src = (uchar*)malloc(compressed);
 
-			if (*buf)
+			if (src)
 			{
-				compressed = GetFileSize(fp, NULL) - 4;
-				src = (uchar*)malloc(compressed);
+				ReadUCharBuffer(fp, src, compressed);
 
-				if (src)
-				{
-					if (ReadUCharBuffer(fp, src, compressed) && uncompress(*buf, size, src, compressed) == Z_OK)
-						r = 1;
+				if (uncompress(*buf, size, src, compressed) == Z_OK)
+					r = 1;
 
-					free(src);
-				}
+				free(src);
 			}
 		}
 
@@ -189,18 +177,19 @@ long DumpCutsceneList(const char* filename, uchar* buf, ulong size)
 
 	if (fp != INVALID_HANDLE_VALUE)
 	{
-		if (WriteULong(fp, size))
+		WriteULong(fp, size);
+		compressed = compressBound(size);
+		dest = (uchar*)malloc(compressed);
+
+		if (dest)
 		{
-			compressed = compressBound(size);
-			dest = (uchar*)malloc(compressed);
-
-			if (dest)
+			if (compress2(dest, &compressed, buf, size, Z_BEST_COMPRESSION) == Z_OK)
 			{
-				if (compress2(dest, &compressed, buf, size, Z_BEST_COMPRESSION) == Z_OK && WriteUCharBuffer(fp, dest, compressed))
-					r = 1;
-
-				free(dest);
+				WriteUCharBuffer(fp, dest, compressed);
+				r = 1;
 			}
+
+			free(dest);
 		}
 
 		CloseHandle(fp);
