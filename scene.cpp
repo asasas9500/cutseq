@@ -58,7 +58,7 @@ long FindAttribute(FbxNode* root, const char* name, FbxNodeAttribute::EType type
 	return 0;
 }
 
-long EvaluateChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, long frames, float** channel)
+long EvaluateChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float a, long frames, float** channel)
 {
 	FbxAnimCurve* curve;
 	FbxTime time;
@@ -66,7 +66,7 @@ long EvaluateChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, l
 	curve = prop->GetCurve(layer, name);
 
 	if (!curve)
-		return 0;
+		return ProvideFixedChannel(a, frames, channel);
 
 	*channel = (float*)malloc(frames * sizeof(float));
 
@@ -182,7 +182,7 @@ long ProcessChannel(float m, long mask, long frames, float* channel, FbxArray<uc
 	return 1;
 }
 
-long EvaluateDummyChannel(float a, long frames, float** channel)
+long ProvideFixedChannel(float a, long frames, float** channel)
 {
 	*channel = (float*)malloc(frames * sizeof(float));
 
@@ -195,24 +195,12 @@ long EvaluateDummyChannel(float a, long frames, float** channel)
 	return 1;
 }
 
-long ProvideChannel(FbxAnimLayer* layer, FbxProperty* prop, const char* name, float a, long frames, float** channel)
-{
-	if (prop->IsAnimated(layer))
-	{
-		if (!EvaluateChannel(layer, prop, NULL, frames, channel))
-			return 0;
-	}
-	else if (!EvaluateDummyChannel(a, frames, channel))
-		return 0;
-
-	return 1;
-}
-
 long PackActorRotation(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
 	EulerAngles rotation;
 	HMatrix matrix;
+	FbxDouble3 vec;
 	float* channel[3];
 	long r;
 
@@ -222,6 +210,7 @@ long PackActorRotation(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DA
 
 	if (header)
 	{
+		vec = node->LclRotation.Get();
 		player->header = header;
 		header = &player->header[player->len - 1];
 		header->packmethod = 0x3DEF;
@@ -229,21 +218,21 @@ long PackActorRotation(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DA
 		for (int i = 0; i < 3; i++)
 			channel[i] = NULL;
 
-		if (EvaluateChannel(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_X, frames, &channel[0]) &&
-			EvaluateChannel(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, frames, &channel[1]) &&
-			EvaluateChannel(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, frames, &channel[2]))
+		if (EvaluateChannel(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_X, (float)vec[0], frames, &channel[0]) &&
+			EvaluateChannel(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Y, (float)vec[1], frames, &channel[1]) &&
+			EvaluateChannel(layer, &node->LclRotation, FBXSDK_CURVENODE_COMPONENT_Z, (float)vec[2], frames, &channel[2]))
 		{
 			for (int i = 0; i < frames; i++)
 			{
-				rotation.x = 0.0174532925F * channel[0][i];
-				rotation.y = 0.0174532925F * channel[1][i];
-				rotation.z = 0.0174532925F * channel[2][i];
+				rotation.x = (float)FBXSDK_PI_DIV_180 * channel[0][i];
+				rotation.y = (float)FBXSDK_PI_DIV_180 * channel[1][i];
+				rotation.z = (float)FBXSDK_PI_DIV_180 * channel[2][i];
 				rotation.w = EulOrdXYZs;
 				Eul_ToHMatrix(rotation, matrix);
 				rotation = Eul_FromHMatrix(matrix, EulOrdZXYr);
-				channel[0][i] = 57.295779513F * rotation.y;
-				channel[1][i] = 57.295779513F * rotation.z;
-				channel[2][i] = 57.295779513F * rotation.x;
+				channel[0][i] = (float)FBXSDK_180_DIV_PI * rotation.y;
+				channel[1][i] = (float)FBXSDK_180_DIV_PI * rotation.z;
+				channel[2][i] = (float)FBXSDK_180_DIV_PI * rotation.x;
 			}
 
 			if (ProcessChannel(2.8444444444F, 0x3FF, frames, channel[0], &player->seq, &header->xkey, &header->xlength) &&
@@ -281,6 +270,7 @@ long TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRA
 long PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
 	NODELOADHEADER* header;
+	FbxDouble3 vec;
 	float* channel[3];
 	long r;
 
@@ -290,15 +280,16 @@ long PackActor(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* play
 
 	if (player->header)
 	{
+		vec = node->LclTranslation.Get();
 		header = player->header;
 		header->packmethod = 0x3DEF;
 
 		for (int i = 0; i < 3; i++)
 			channel[i] = NULL;
 
-		if (EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, frames, &channel[0]) &&
-			EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, frames, &channel[1]) &&
-			EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, frames, &channel[2]) &&
+		if (EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, (float)vec[0], frames, &channel[0]) &&
+			EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, (float)vec[1], frames, &channel[1]) &&
+			EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, (float)vec[2], frames, &channel[2]) &&
 			ProcessChannel(0.3333333333F, 0xFFFF, frames, channel[0], &player->seq, &header->xkey, &header->xlength) &&
 			ProcessChannel(-0.3333333333F, 0xFFFF, frames, channel[2], &player->seq, &header->ykey, &header->ylength) &&
 			ProcessChannel(0.3333333333F, 0xFFFF, frames, channel[1], &player->seq, &header->zkey, &header->zlength) &&
@@ -343,6 +334,7 @@ long PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* pla
 {
 	NODELOADHEADER* header;
 	FbxNode* target;
+	FbxDouble3 vec;
 	float* channel[2][3];
 	long r;
 
@@ -353,28 +345,30 @@ long PackCamera(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* pla
 	if (player->header)
 	{
 		target = node->GetTarget();
+		vec = target->LclTranslation.Get();
 		header = player->header;
 		header->packmethod = 0x3DEF;
 
 		for (int i = 0; i < 3; i++)
 			channel[0][i] = NULL;
 
-		if (EvaluateChannel(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, frames, &channel[0][0]) &&
-			EvaluateChannel(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, frames, &channel[0][1]) &&
-			EvaluateChannel(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, frames, &channel[0][2]) &&
+		if (EvaluateChannel(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, (float)vec[0], frames, &channel[0][0]) &&
+			EvaluateChannel(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, (float)vec[1], frames, &channel[0][1]) &&
+			EvaluateChannel(layer, &target->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, (float)vec[2], frames, &channel[0][2]) &&
 			ProcessChannel(0.5F, 0xFFFF, frames, channel[0][0], &player->seq, &header->xkey, &header->xlength) &&
 			ProcessChannel(-0.5F, 0xFFFF, frames, channel[0][2], &player->seq, &header->ykey, &header->ylength) &&
 			ProcessChannel(0.5F, 0xFFFF, frames, channel[0][1], &player->seq, &header->zkey, &header->zlength))
 		{
+			vec = node->LclTranslation.Get();
 			header++;
 			header->packmethod = 0x3DEF;
 
 			for (int i = 0; i < 3; i++)
 				channel[1][i] = NULL;
 
-			if (EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, frames, &channel[1][0]) &&
-				EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, frames, &channel[1][1]) &&
-				EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, frames, &channel[1][2]) &&
+			if (EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_X, (float)vec[0], frames, &channel[1][0]) &&
+				EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Y, (float)vec[1], frames, &channel[1][1]) &&
+				EvaluateChannel(layer, &node->LclTranslation, FBXSDK_CURVENODE_COMPONENT_Z, (float)vec[2], frames, &channel[1][2]) &&
 				ProcessChannel(0.5F, 0xFFFF, frames, channel[1][0], &player->seq, &header->xkey, &header->xlength) &&
 				ProcessChannel(-0.5F, 0xFFFF, frames, channel[1][2], &player->seq, &header->ykey, &header->ylength) &&
 				ProcessChannel(0.5F, 0xFFFF, frames, channel[1][1], &player->seq, &header->zkey, &header->zlength))
@@ -409,13 +403,23 @@ long PackExtensions(FbxAnimLayer* layer, FbxCamera* cam, long frames, FRAME_DATA
 		for (int i = 0; i < 3; i++)
 			channel[i] = NULL;
 
-		if (ProvideChannel(layer, &cam->Roll, NULL, 0, frames, &channel[0]) &&
-			ProvideChannel(layer, &cam->FieldOfView, NULL, 63.1208791208F, frames, &channel[1]) &&
-			EvaluateDummyChannel(0, frames, &channel[2]) &&
-			ProcessChannel(2.8444444444F, 0xFFFF, frames, channel[0], &player->seq, &header->xkey, &header->xlength) &&
-			ProcessChannel(182, 0xFFFF, frames, channel[1], &player->seq, &header->ykey, &header->ylength) &&
-			ProcessChannel(0, 0xFFFF, frames, channel[2], &player->seq, &header->zkey, &header->zlength))
-			r = 1;
+		if (EvaluateChannel(layer, &cam->Roll, NULL, (float)cam->Roll.Get(), frames, &channel[0]) &&
+			EvaluateChannel(layer, &cam->FieldOfView, NULL, (float)cam->FieldOfView.Get(), frames, &channel[1]) &&
+			ProvideFixedChannel(0, frames, &channel[2]))
+		{
+			for (int i = 0; i < frames; i++)
+				channel[1][i] = (float)cam->ComputeFocalLength(channel[1][i]);
+
+			cam->SetApertureMode(FbxCamera::eVertical);
+
+			for (int i = 0; i < frames; i++)
+				channel[1][i] = (float)cam->ComputeFieldOfView(channel[1][i]);
+
+			if (ProcessChannel(2.8444444444F, 0xFFFF, frames, channel[0], &player->seq, &header->xkey, &header->xlength) &&
+				ProcessChannel(182, 0xFFFF, frames, channel[1], &player->seq, &header->ykey, &header->ylength) &&
+				ProcessChannel(0, 0xFFFF, frames, channel[2], &player->seq, &header->zkey, &header->zlength))
+				r = 1;
+		}
 
 		for (int i = 0; i < 3; i++)
 			free(channel[i]);
