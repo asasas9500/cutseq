@@ -4,6 +4,17 @@
 #include "setup.h"
 #include "file.h"
 
+void ShowError(const char* format, ...)
+{
+	va_list list;
+	char message[128];
+
+	va_start(list, format);
+	vsprintf_s(message, 128, format, list);
+	MessageBox(NULL, message, "cutseq", MB_OK | MB_ICONERROR | MB_APPLMODAL);
+	va_end(list);
+}
+
 int main(int argc, char** argv)
 {
 	SETUP_STRUCT cfg;
@@ -65,6 +76,9 @@ int main(int argc, char** argv)
 
 		FreeConfiguration(&cfg);
 	}
+
+	if (r)
+		MessageBox(NULL, "cutseq.pak was saved", "cutseq", MB_OK | MB_ICONINFORMATION | MB_APPLMODAL);
 
 	return !r;
 }

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "setup.h"
+#include "main.h"
 #include "inih/ini.h"
 
 char* ReadLine(char* buf, long size, FILE* fp)
@@ -35,8 +36,20 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.number = (long*)malloc(sizeof(long));
 
-					if (!cfg->options.number || !ParseIntegers(value, cfg->options.number, 1) || *cfg->options.number < 1 || *cfg->options.number > 255)
+					if (!cfg->options.number)
 						return 0;
+
+					if (!ParseIntegers(value, cfg->options.number, 1))
+					{
+						ShowError("Cutscene number must be an integer");
+						return 0;
+					}
+
+					if (*cfg->options.number < 1 || *cfg->options.number > 255)
+					{
+						ShowError("Cutscene number must be between 1 and 255");
+						return 0;
+					}
 				}
 			}
 			else if (!_stricmp(name, "camera"))
@@ -45,8 +58,14 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.camera = _strdup(value);
 
-					if (!cfg->options.camera || cfg->options.camera[0] == '\0')
+					if (!cfg->options.camera)
 						return 0;
+
+					if (cfg->options.camera[0] == '\0')
+					{
+						ShowError("Camera node name must be non-empty");
+						return 0;
+					}
 				}
 			}
 			else if (!_stricmp(name, "origin"))
@@ -55,8 +74,32 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.origin = (PHD_VECTOR*)malloc(sizeof(PHD_VECTOR));
 
-					if (!cfg->options.origin || !ParseIntegers(value, (long*)cfg->options.origin, 3) || cfg->options.origin->x < 0 || cfg->options.origin->x > 131071 || cfg->options.origin->y < -32768 || cfg->options.origin->y > 32767 || cfg->options.origin->z < 0 || cfg->options.origin->z > 131071)
+					if (!cfg->options.origin)
 						return 0;
+
+					if (!ParseIntegers(value, (long*)cfg->options.origin, 3))
+					{
+						ShowError("Origin must be composed of three integers separated by commas");
+						return 0;
+					}
+
+					if (cfg->options.origin->x < 0 || cfg->options.origin->x > 131071)
+					{
+						ShowError("X coordinate of origin must be between 0 and 131071");
+						return 0;
+					}
+
+					if (cfg->options.origin->y < -32768 || cfg->options.origin->y > 32767)
+					{
+						ShowError("Y coordinate of origin must be between -32768 and 32767");
+						return 0;
+					}
+
+					if (cfg->options.origin->z < 0 || cfg->options.origin->z > 131071)
+					{
+						ShowError("Z coordinate of origin must be between 0 and 131071");
+						return 0;
+					}
 				}
 			}
 			else if (!_stricmp(name, "audio"))
@@ -65,8 +108,20 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->options.audio = (long*)malloc(sizeof(long));
 
-					if (!cfg->options.audio || !ParseIntegers(value, cfg->options.audio, 1) || *cfg->options.audio < 0 || *cfg->options.audio > 255)
+					if (!cfg->options.audio)
 						return 0;
+
+					if (!ParseIntegers(value, cfg->options.audio, 1))
+					{
+						ShowError("Audio must be an integer");
+						return 0;
+					}
+
+					if (*cfg->options.audio < 0 || *cfg->options.audio > 255)
+					{
+						ShowError("Audio must be between 0 and 255");
+						return 0;
+					}
 				}
 			}
 		}
@@ -83,8 +138,14 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->lara.name = _strdup(value);
 
-					if (!cfg->lara.name || cfg->lara.name[0] == '\0')
+					if (!cfg->lara.name)
 						return 0;
+
+					if (cfg->lara.name[0] == '\0')
+					{
+						ShowError("Lara node name must be non-empty");
+						return 0;
+					}
 				}
 			}
 		}
@@ -101,8 +162,14 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->actor.name[cfg->actor.idx] = _strdup(value);
 
-					if (!cfg->actor.name[cfg->actor.idx] || cfg->actor.name[cfg->actor.idx][0] == '\0')
+					if (!cfg->actor.name[cfg->actor.idx])
 						return 0;
+
+					if (cfg->actor.name[cfg->actor.idx][0] == '\0')
+					{
+						ShowError("Actor %d node name must be non-empty", cfg->actor.idx + 1);
+						return 0;
+					}
 				}
 			}
 			else if (!_stricmp(name, "slot"))
@@ -111,8 +178,20 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 				{
 					cfg->actor.slot[cfg->actor.idx] = (long*)malloc(sizeof(long));
 
-					if (!cfg->actor.slot[cfg->actor.idx] || !ParseIntegers(value, cfg->actor.slot[cfg->actor.idx], 1) || *cfg->actor.slot[cfg->actor.idx] < 1 || *cfg->actor.slot[cfg->actor.idx] > 519)
+					if (!cfg->actor.slot[cfg->actor.idx])
 						return 0;
+
+					if (!ParseIntegers(value, cfg->actor.slot[cfg->actor.idx], 1))
+					{
+						ShowError("Actor %d slot must be an integer", cfg->actor.idx + 1);
+						return 0;
+					}
+
+					if (*cfg->actor.slot[cfg->actor.idx] < 1 || *cfg->actor.slot[cfg->actor.idx] > 519)
+					{
+						ShowError("Actor %d slot must be between 1 and 519", cfg->actor.idx + 1);
+						return 0;
+					}
 				}
 			}
 		}
@@ -151,13 +230,43 @@ long CheckConfiguration(SETUP_STRUCT* cfg)
 	if (cfg->actor.idx > 8)
 		cfg->actor.idx = 8;
 
-	if (cfg->options.idx == -1 || !cfg->options.number || !cfg->options.camera || cfg->lara.idx != -1 && !cfg->lara.name)
+	if (cfg->options.idx == -1)
+	{
+		ShowError("Options section must be present");
 		return 0;
+	}
+
+	if (!cfg->options.number)
+	{
+		ShowError("Cutscene number must be informed");
+		return 0;
+	}
+
+	if (!cfg->options.camera)
+	{
+		ShowError("Camera node name must be informed");
+		return 0;
+	}
+
+	if (cfg->lara.idx != -1 && !cfg->lara.name)
+	{
+		ShowError("Lara node name must be informed");
+		return 0;
+	}
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		if (!cfg->actor.name[i] || !cfg->actor.slot[i])
+		if (!cfg->actor.name[i])
+		{
+			ShowError("Actor %d node name must be informed", i + 1);
 			return 0;
+		}
+
+		if (!cfg->actor.slot[i])
+		{
+			ShowError("Actor %d slot must be informed", i + 1);
+			return 0;
+		}
 	}
 
 	return 1;
@@ -198,6 +307,9 @@ long ParseIntegers(const char* value, long* arr, long len)
 			tok = strtok_s(NULL, ",", &ctx);
 		}
 
+		if (tok)
+			r = 0;
+
 		free(str);
 	}
 	else
@@ -224,7 +336,7 @@ void FreeConfiguration(SETUP_STRUCT* cfg)
 long GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 {
 	FILE* fp;
-	long r;
+	long r, line;
 
 	r = 0;
 
@@ -232,11 +344,20 @@ long GetConfiguration(const char* filename, SETUP_STRUCT* cfg)
 
 	if (!fopen_s(&fp, filename, "r"))
 	{
-		if (!ini_parse_stream((ini_reader)ReadLine, fp, (ini_handler)ConfigurationHandler, cfg) && CheckConfiguration(cfg))
-			r = 1;
+		line = ini_parse_stream((ini_reader)ReadLine, fp, (ini_handler)ConfigurationHandler, cfg);
+
+		if (!line)
+		{
+			if (CheckConfiguration(cfg))
+				r = 1;
+		}
+		else
+			ShowError("Line %d cannot be parsed", line);
 
 		fclose(fp);
 	}
+	else
+		ShowError("cutseq script cannot be opened");
 
 	return r;
 }

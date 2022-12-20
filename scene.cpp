@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "scene.h"
+#include "main.h"
 extern "C"
 {
 #include "euler_angle/EulerAngles.h"
@@ -13,30 +14,45 @@ long ImportScene(FbxManager* manager, const char* filename, FbxNode** root, long
 
 	importer = FbxImporter::Create(manager, "Importer");
 
-	if (importer->Initialize(filename, -1, manager->GetIOSettings()) && importer->IsFBX())
+	if (importer->Initialize(filename, -1, manager->GetIOSettings()))
 	{
-		scene = FbxScene::Create(manager, "Scene");
-
-		if (importer->Import(scene))
+		if (importer->IsFBX())
 		{
-			FbxAxisSystem::Max.ConvertScene(scene);
-			*root = scene->GetRootNode();
-			stack = scene->GetSrcObject<FbxAnimStack>();
+			scene = FbxScene::Create(manager, "Scene");
 
-			if (stack)
+			if (importer->Import(scene))
 			{
-				*frames = (long)stack->GetLocalTimeSpan().GetDuration().GetFrameCount(FbxTime::eFrames30) + 1;
+				FbxAxisSystem::Max.ConvertScene(scene);
+				*root = scene->GetRootNode();
+				stack = scene->GetSrcObject<FbxAnimStack>();
 
-				if (*frames >= 2)
+				if (stack)
 				{
-					*layer = stack->GetSrcObject<FbxAnimLayer>();
+					*frames = (long)stack->GetLocalTimeSpan().GetDuration().GetFrameCount(FbxTime::eFrames30) + 1;
 
-					if (*layer)
-						return 1;
+					if (*frames >= 2)
+					{
+						*layer = stack->GetSrcObject<FbxAnimLayer>();
+
+						if (*layer)
+							return 1;
+
+						ShowError("Animation layer must be present");
+					}
+					else
+						ShowError("Animation stack duration must be at least 2 frames long");
 				}
+				else
+					ShowError("Animation stack must be present");
 			}
+			else
+				ShowError("cutseq scene cannot be imported");
 		}
+		else
+			ShowError("cutseq scene must be in FBX format");
 	}
+	else
+		ShowError("cutseq scene cannot be initialised");
 
 	return 0;
 }
@@ -91,7 +107,10 @@ long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 	if (cfg->lara.idx != -1)
 	{
 		if (!FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh, &actor[curr]))
+		{
+			ShowError("Lara node cannot be found");
 			return 0;
+		}
 
 		curr++;
 	}
@@ -99,7 +118,10 @@ long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
 		if (!FindAttribute(root, cfg->actor.name[i], FbxNodeAttribute::eMesh, &actor[curr]))
+		{
+			ShowError("Actor %d node cannot be found", i + 1);
 			return 0;
+		}
 
 		curr++;
 	}
@@ -470,10 +492,21 @@ long ConvertScene(const char* filename, SETUP_STRUCT* cfg, FRAME_DATA* player, l
 	strcpy_s(input, MAX_PATH, filename);
 	PathRenameExtension(input, ".fbx");
 
-	if (ImportScene(manager, input, &root, frames, &layer) &&
-		FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera, &cam) && cam->GetTarget() &&
-		FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
-		r = 1;
+	if (ImportScene(manager, input, &root, frames, &layer))
+	{
+		if (FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera, &cam))
+		{
+			if (cam->GetTarget())
+			{
+				if (FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, player))
+					r = 1;
+			}
+			else
+				ShowError("Target for camera node must be set");
+		}
+		else
+			ShowError("Camera node cannot be found");
+	}
 
 	manager->Destroy();
 	return r;

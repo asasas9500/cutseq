@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "file.h"
+#include "main.h"
 #include "zlib/zlib.h"
 
 void ReadUCharBuffer(HANDLE fp, uchar* buf, ulong size)
@@ -56,6 +57,8 @@ long LoadCutsceneList(const char* filename, uchar** buf, ulong* size)
 
 				if (uncompress(*buf, size, src, compressed) == Z_OK)
 					r = 1;
+				else
+					ShowError("cutseq.pak cannot be decompressed");
 
 				free(src);
 			}
@@ -63,6 +66,8 @@ long LoadCutsceneList(const char* filename, uchar** buf, ulong* size)
 
 		CloseHandle(fp);
 	}
+	else
+		ShowError("cutseq.pak cannot be opened");
 
 	return r;
 }
@@ -188,12 +193,16 @@ long DumpCutsceneList(const char* filename, uchar* buf, ulong size)
 				WriteUCharBuffer(fp, dest, compressed);
 				r = 1;
 			}
+			else
+				ShowError("cutseq.pak cannot be compressed");
 
 			free(dest);
 		}
 
 		CloseHandle(fp);
 	}
+	else
+		ShowError("cutseq.pak cannot be opened");
 
 	return r;
 }
@@ -222,31 +231,36 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 	PathAppend(output, "cutseq.pak");
 	buf = NULL;
 
-	if (LoadCutsceneList(output, &buf, &size) && CheckSignature(buf))
+	if (LoadCutsceneList(output, &buf, &size))
 	{
-		table = (ulong*)buf;
-		PrepareCutscene(cfg, player, frames, &cd, &space);
-		number = *cfg->options.number;
-		old = table[2 * number + 1];
-		size += space - old;
-
-		if (space > old)
-			ptr = (uchar*)realloc(buf, size);
-		else
-			ptr = buf;
-
-		if (ptr)
+		if (CheckSignature(buf))
 		{
-			buf = ptr;
 			table = (ulong*)buf;
-			off = table[2 * number] + space;
-			memmove(&buf[off], &buf[off + old - space], size - off);
-			UpdateCutscene(&cd, player, buf, table[2 * number]);
-			AdjustTable(number, space, table);
+			PrepareCutscene(cfg, player, frames, &cd, &space);
+			number = *cfg->options.number;
+			old = table[2 * number + 1];
+			size += space - old;
 
-			if (DumpCutsceneList(output, buf, size))
-				r = 1;
+			if (space > old)
+				ptr = (uchar*)realloc(buf, size);
+			else
+				ptr = buf;
+
+			if (ptr)
+			{
+				buf = ptr;
+				table = (ulong*)buf;
+				off = table[2 * number] + space;
+				memmove(&buf[off], &buf[off + old - space], size - off);
+				UpdateCutscene(&cd, player, buf, table[2 * number]);
+				AdjustTable(number, space, table);
+
+				if (DumpCutsceneList(output, buf, size))
+					r = 1;
+			}
 		}
+		else
+			ShowError("cutseq.pak signature must match");
 	}
 
 	free(buf);
