@@ -273,16 +273,13 @@ long PackActorRotation(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DA
 
 long TraverseActorHierarchy(FbxAnimLayer* layer, FbxNode* node, long frames, FRAME_DATA* player)
 {
-	FbxNode* child;
 	long count;
 
 	count = node->GetChildCount();
 
 	for (int i = 0; i < count; i++)
 	{
-		child = node->GetChild(i);
-
-		if (!PackActorRotation(layer, child, frames, player))
+		if (!PackActorRotation(layer, node->GetChild(i), frames, player))
 			return 0;
 	}
 
