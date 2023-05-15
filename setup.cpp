@@ -18,7 +18,7 @@ char* ReadLine(char* buf, long size, FILE* fp)
 	return NULL;
 }
 
-long ConfigurationHandler(void* data, const char* section, const char* name, const char* value)
+long ConfigurationHandler(void* data, const char* section, const char* entry, const char* value)
 {
 	SETUP_STRUCT* cfg;
 
@@ -28,9 +28,9 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 	{
 		if (cfg->options.idx < 1)
 		{
-			if (name == NULL && value == NULL)
+			if (entry == NULL && value == NULL)
 				cfg->options.idx++;
-			else if (!_stricmp(name, "number"))
+			else if (!_stricmp(entry, "number"))
 			{
 				if (!cfg->options.number)
 				{
@@ -52,7 +52,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 					}
 				}
 			}
-			else if (!_stricmp(name, "camera"))
+			else if (!_stricmp(entry, "camera"))
 			{
 				if (!cfg->options.camera)
 				{
@@ -68,7 +68,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 					}
 				}
 			}
-			else if (!_stricmp(name, "origin"))
+			else if (!_stricmp(entry, "origin"))
 			{
 				if (!cfg->options.origin)
 				{
@@ -102,7 +102,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 					}
 				}
 			}
-			else if (!_stricmp(name, "audio"))
+			else if (!_stricmp(entry, "audio"))
 			{
 				if (!cfg->options.audio)
 				{
@@ -130,9 +130,9 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 	{
 		if (cfg->lara.idx < 1)
 		{
-			if (name == NULL && value == NULL)
+			if (entry == NULL && value == NULL)
 				cfg->lara.idx++;
-			else if (!_stricmp(name, "name"))
+			else if (!_stricmp(entry, "name"))
 			{
 				if (!cfg->lara.name)
 				{
@@ -154,9 +154,9 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 	{
 		if (cfg->actor.idx < 9)
 		{
-			if (name == NULL && value == NULL)
+			if (entry == NULL && value == NULL)
 				cfg->actor.idx++;
-			else if (!_stricmp(name, "name"))
+			else if (!_stricmp(entry, "name"))
 			{
 				if (!cfg->actor.name[cfg->actor.idx])
 				{
@@ -172,7 +172,7 @@ long ConfigurationHandler(void* data, const char* section, const char* name, con
 					}
 				}
 			}
-			else if (!_stricmp(name, "slot"))
+			else if (!_stricmp(entry, "slot"))
 			{
 				if (!cfg->actor.slot[cfg->actor.idx])
 				{
