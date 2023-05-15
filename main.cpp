@@ -57,24 +57,19 @@ int main(int argc, char** argv)
 		filename = script;
 	}
 
-	if (argc == 2 || GetOpenFileName(&dialog))
+	if ((argc == 2 || GetOpenFileName(&dialog)) && GetConfiguration(filename, &cfg))
 	{
-		if (GetConfiguration(filename, &cfg))
+		for (int i = 0; i < 12; i++)
 		{
-			for (int i = 0; i < 12; i++)
-			{
-				player[i].header = NULL;
-				player[i].len = 0;
-			}
-
-			if (ConvertScene(filename, &cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
-				r = 1;
-
-			for (int i = 0; i < 12; i++)
-				free(player[i].header);
+			player[i].header = NULL;
+			player[i].len = 0;
 		}
 
-		FreeConfiguration(&cfg);
+		if (ConvertScene(filename, &cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
+			r = 1;
+
+		for (int i = 0; i < 12; i++)
+			free(player[i].header);
 	}
 
 	if (r)

@@ -6,5 +6,4 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 void InitialiseConfiguration(SETUP_STRUCT* cfg);
 long CheckConfiguration(SETUP_STRUCT* cfg);
 long ParseIntegers(const char* value, long* arr, long len);
-void FreeConfiguration(SETUP_STRUCT* cfg);
 long GetConfiguration(const char* filename, SETUP_STRUCT* cfg);

@@ -86,14 +86,14 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 	long curr;
 
 	cut = &cd->cut;
-	cut->numactors = (short)(cfg->actor.idx + 2);
+	cut->numactors = cfg->actor.idx + 2;
 	cut->numframes = (short)frames;
 
-	if (cfg->options.origin)
+	if (cfg->options.set.origin.on)
 	{
-		cut->orgx = cfg->options.origin->x;
-		cut->orgy = cfg->options.origin->y;
-		cut->orgz = cfg->options.origin->z;
+		cut->orgx = cfg->options.set.origin.cnt.x;
+		cut->orgy = cfg->options.set.origin.cnt.y;
+		cut->orgz = cfg->options.set.origin.cnt.z;
 	}
 	else
 	{
@@ -102,8 +102,8 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 		cut->orgz = 0;
 	}
 
-	if (cfg->options.audio)
-		cut->audio_track = *cfg->options.audio;
+	if (cfg->options.set.audio.on)
+		cut->audio_track = cfg->options.set.audio.cnt;
 	else
 		cut->audio_track = -1;
 
@@ -131,7 +131,7 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 	{
 		curr++;
 		cut->actor_data[i + 1].offset = *space;
-		cut->actor_data[i + 1].objslot = (short)*cfg->actor.slot[i];
+		cut->actor_data[i + 1].objslot = (short)cfg->actor.set[i].slot.cnt;
 		cut->actor_data[i + 1].nodes = (short)(player[curr].len - 1);
 		*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
 	}
@@ -237,7 +237,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 		{
 			table = (ulong*)buf;
 			PrepareCutscene(cfg, player, frames, &cd, &space);
-			number = *cfg->options.number;
+			number = cfg->options.set.number.cnt;
 			old = table[2 * number + 1];
 			size += space - old;
 

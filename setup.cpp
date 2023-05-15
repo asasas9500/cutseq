@@ -32,96 +32,86 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 				cfg->options.idx++;
 			else if (!_stricmp(entry, "number"))
 			{
-				if (!cfg->options.number)
+				if (!cfg->options.set.number.on)
 				{
-					cfg->options.number = (long*)malloc(sizeof(long));
-
-					if (!cfg->options.number)
-						return 0;
-
-					if (!ParseIntegers(value, cfg->options.number, 1))
+					if (!ParseIntegers(value, &cfg->options.set.number.cnt, 1))
 					{
 						ShowError("Cutscene number must be an integer");
 						return 0;
 					}
 
-					if (*cfg->options.number < 1 || *cfg->options.number > 255)
+					if (cfg->options.set.number.cnt < 1 || cfg->options.set.number.cnt > 255)
 					{
 						ShowError("Cutscene number must be between 1 and 255");
 						return 0;
 					}
+
+					cfg->options.set.number.on = 1;
 				}
 			}
 			else if (!_stricmp(entry, "camera"))
 			{
-				if (!cfg->options.camera)
+				if (!cfg->options.set.camera.on)
 				{
-					cfg->options.camera = _strdup(value);
+					strcpy_s(cfg->options.set.camera.cnt, 200, value);
 
-					if (!cfg->options.camera)
-						return 0;
-
-					if (cfg->options.camera[0] == '\0')
+					if (cfg->options.set.camera.cnt[0] == '\0')
 					{
 						ShowError("Camera node name must be non-empty");
 						return 0;
 					}
+
+					cfg->options.set.camera.on = 1;
 				}
 			}
 			else if (!_stricmp(entry, "origin"))
 			{
-				if (!cfg->options.origin)
+				if (!cfg->options.set.origin.on)
 				{
-					cfg->options.origin = (PHD_VECTOR*)malloc(sizeof(PHD_VECTOR));
-
-					if (!cfg->options.origin)
-						return 0;
-
-					if (!ParseIntegers(value, (long*)cfg->options.origin, 3))
+					if (!ParseIntegers(value, (long*)&cfg->options.set.origin.cnt, 3))
 					{
 						ShowError("Origin must be composed of three integers separated by commas");
 						return 0;
 					}
 
-					if (cfg->options.origin->x < 0 || cfg->options.origin->x > 131071)
+					if (cfg->options.set.origin.cnt.x < 0 || cfg->options.set.origin.cnt.x > 131071)
 					{
 						ShowError("X coordinate of origin must be between 0 and 131071");
 						return 0;
 					}
 
-					if (cfg->options.origin->y < -32768 || cfg->options.origin->y > 32767)
+					if (cfg->options.set.origin.cnt.y < -32768 || cfg->options.set.origin.cnt.y > 32767)
 					{
 						ShowError("Y coordinate of origin must be between -32768 and 32767");
 						return 0;
 					}
 
-					if (cfg->options.origin->z < 0 || cfg->options.origin->z > 131071)
+					if (cfg->options.set.origin.cnt.z < 0 || cfg->options.set.origin.cnt.z > 131071)
 					{
 						ShowError("Z coordinate of origin must be between 0 and 131071");
 						return 0;
 					}
+
+					cfg->options.set.origin.on = 1;
 				}
 			}
 			else if (!_stricmp(entry, "audio"))
 			{
-				if (!cfg->options.audio)
+				if (!cfg->options.set.audio.on)
 				{
-					cfg->options.audio = (long*)malloc(sizeof(long));
-
-					if (!cfg->options.audio)
-						return 0;
-
-					if (!ParseIntegers(value, cfg->options.audio, 1))
+					if (!ParseIntegers(value, &cfg->options.set.audio.cnt, 1))
 					{
 						ShowError("Audio must be an integer");
 						return 0;
 					}
 
-					if (*cfg->options.audio < 0 || *cfg->options.audio > 255)
+					if (cfg->options.set.audio.cnt < 0 || cfg->options.set.audio.cnt > 255)
 					{
 						ShowError("Audio must be between 0 and 255");
 						return 0;
 					}
+
+					cfg->options.set.audio.on = 1;
 				}
 			}
 		}
@@ -134,18 +124,17 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 				cfg->lara.idx++;
 			else if (!_stricmp(entry, "name"))
 			{
-				if (!cfg->lara.name)
+				if (!cfg->lara.set.name.on)
 				{
-					cfg->lara.name = _strdup(value);
+					strcpy_s(cfg->lara.set.name.cnt, 200, value);
 
-					if (!cfg->lara.name)
-						return 0;
-
-					if (cfg->lara.name[0] == '\0')
+					if (cfg->lara.set.name.cnt[0] == '\0')
 					{
 						ShowError("Lara node name must be non-empty");
 						return 0;
 					}
+
+					cfg->lara.set.name.on = 1;
 				}
 			}
 		}
@@ -158,40 +147,36 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 				cfg->actor.idx++;
 			else if (!_stricmp(entry, "name"))
 			{
-				if (!cfg->actor.name[cfg->actor.idx])
+				if (!cfg->actor.set[cfg->actor.idx].name.on)
 				{
-					cfg->actor.name[cfg->actor.idx] = _strdup(value);
+					strcpy_s(cfg->actor.set[cfg->actor.idx].name.cnt, 200, value);
 
-					if (!cfg->actor.name[cfg->actor.idx])
-						return 0;
-
-					if (cfg->actor.name[cfg->actor.idx][0] == '\0')
+					if (cfg->actor.set[cfg->actor.idx].name.cnt[0] == '\0')
 					{
 						ShowError("Actor %d node name must be non-empty", cfg->actor.idx + 1);
 						return 0;
 					}
+
+					cfg->actor.set[cfg->actor.idx].name.on = 1;
 				}
 			}
 			else if (!_stricmp(entry, "slot"))
 			{
-				if (!cfg->actor.slot[cfg->actor.idx])
+				if (!cfg->actor.set[cfg->actor.idx].slot.on)
 				{
-					cfg->actor.slot[cfg->actor.idx] = (long*)malloc(sizeof(long));
-
-					if (!cfg->actor.slot[cfg->actor.idx])
-						return 0;
-
-					if (!ParseIntegers(value, cfg->actor.slot[cfg->actor.idx], 1))
+					if (!ParseIntegers(value, &cfg->actor.set[cfg->actor.idx].slot.cnt, 1))
 					{
 						ShowError("Actor %d slot must be an integer", cfg->actor.idx + 1);
 						return 0;
 					}
 
-					if (*cfg->actor.slot[cfg->actor.idx] < 1 || *cfg->actor.slot[cfg->actor.idx] > 519)
+					if (cfg->actor.set[cfg->actor.idx].slot.cnt < 1 || cfg->actor.set[cfg->actor.idx].slot.cnt > 519)
 					{
 						ShowError("Actor %d slot must be between 1 and 519", cfg->actor.idx + 1);
 						return 0;
 					}
+
+					cfg->actor.set[cfg->actor.idx].slot.on = 1;
 				}
 			}
 		}
@@ -202,20 +187,8 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 
 void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
-	cfg->options.number = NULL;
-	cfg->options.camera = NULL;
-	cfg->options.origin = NULL;
-	cfg->options.audio = NULL;
 	cfg->options.idx = -1;
-	cfg->lara.name = NULL;
 	cfg->lara.idx = -1;
-
-	for (int i = 0; i < 9; i++)
-	{
-		cfg->actor.name[i] = NULL;
-		cfg->actor.slot[i] = NULL;
-	}
-
 	cfg->actor.idx = -1;
 }
 
@@ -236,19 +209,19 @@ long CheckConfiguration(SETUP_STRUCT* cfg)
 		return 0;
 	}
 
-	if (!cfg->options.number)
+	if (!cfg->options.set.number.on)
 	{
 		ShowError("Cutscene number must be informed");
 		return 0;
 	}
 
-	if (!cfg->options.camera)
+	if (!cfg->options.set.camera.on)
 	{
 		ShowError("Camera node name must be informed");
 		return 0;
 	}
 
-	if (cfg->lara.idx != -1 && !cfg->lara.name)
+	if (cfg->lara.idx != -1 && !cfg->lara.set.name.on)
 	{
 		ShowError("Lara node name must be informed");
 		return 0;
@@ -256,13 +229,13 @@ long CheckConfiguration(SETUP_STRUCT* cfg)
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		if (!cfg->actor.name[i])
+		if (!cfg->actor.set[i].name.on)
 		{
 			ShowError("Actor %d node name must be informed", i + 1);
 			return 0;
 		}
 
-		if (!cfg->actor.slot[i])
+		if (!cfg->actor.set[i].slot.on)
 		{
 			ShowError("Actor %d slot must be informed", i + 1);
 			return 0;
@@ -316,21 +289,6 @@ long ParseIntegers(const char* value, long* arr, long len)
 		r = 0;
 
 	return r;
-}
-
-void FreeConfiguration(SETUP_STRUCT* cfg)
-{
-	free(cfg->options.number);
-	free(cfg->options.camera);
-	free(cfg->options.origin);
-	free(cfg->options.audio);
-	free(cfg->lara.name);
-
-	for (int i = 0; i < 9; i++)
-	{
-		free(cfg->actor.name[i]);
-		free(cfg->actor.slot[i]);
-	}
 }
 
 long GetConfiguration(const char* filename, SETUP_STRUCT* cfg)

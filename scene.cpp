@@ -106,7 +106,7 @@ long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 
 	if (cfg->lara.idx != -1)
 	{
-		if (!FindAttribute(root, cfg->lara.name, FbxNodeAttribute::eMesh, &actor[curr]))
+		if (!FindAttribute(root, cfg->lara.set.name.cnt, FbxNodeAttribute::eMesh, &actor[curr]))
 		{
 			ShowError("Lara node cannot be found");
 			return 0;
@@ -117,7 +117,7 @@ long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 
 	for (int i = 0; i <= cfg->actor.idx; i++)
 	{
-		if (!FindAttribute(root, cfg->actor.name[i], FbxNodeAttribute::eMesh, &actor[curr]))
+		if (!FindAttribute(root, cfg->actor.set[i].name.cnt, FbxNodeAttribute::eMesh, &actor[curr]))
 		{
 			ShowError("Actor %d node cannot be found", i + 1);
 			return 0;
@@ -494,7 +494,7 @@ long ConvertScene(const char* filename, SETUP_STRUCT* cfg, FRAME_DATA* player, l
 
 	if (ImportScene(manager, input, &root, frames, &layer))
 	{
-		if (FindAttribute(root, cfg->options.camera, FbxNodeAttribute::eCamera, &cam))
+		if (FindAttribute(root, cfg->options.set.camera.cnt, FbxNodeAttribute::eCamera, &cam))
 		{
 			if (cam->GetTarget())
 			{

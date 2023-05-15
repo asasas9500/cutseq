@@ -41,33 +41,66 @@ struct NODELOADHEADER
 	short zlength;
 };
 
+struct OPTIONAL_INTEGER
+{
+	long cnt;
+	char on;
+};
+
+struct OPTIONAL_STRING
+{
+	char cnt[200];
+	char on;
+};
+
+struct OPTIONAL_VECTOR
+{
+	PHD_VECTOR cnt;
+	char on;
+};
+
 struct OPTIONS_SET
 {
-	long* number;
-	char* camera;
-	PHD_VECTOR* origin;
-	long* audio;
-	long idx;
+	OPTIONAL_INTEGER number;
+	OPTIONAL_STRING camera;
+	OPTIONAL_VECTOR origin;
+	OPTIONAL_INTEGER audio;
 };
 
 struct LARA_SET
 {
-	char* name;
-	long idx;
+	OPTIONAL_STRING name;
 };
 
 struct ACTOR_SET
 {
-	char* name[9];
-	long* slot[9];
-	long idx;
+	OPTIONAL_STRING name;
+	OPTIONAL_INTEGER slot;
+};
+
+struct OPTIONS_COLLECTION
+{
+	OPTIONS_SET set;
+	char idx;
+};
+
+struct LARA_COLLECTION
+{
+	LARA_SET set;
+	char idx;
+};
+
+struct ACTOR_COLLECTION
+{
+	ACTOR_SET set[9];
+	char idx;
 };
 
 struct SETUP_STRUCT
 {
-	OPTIONS_SET options;
-	LARA_SET lara;
-	ACTOR_SET actor;
+	OPTIONS_COLLECTION options;
+	LARA_COLLECTION lara;
+	ACTOR_COLLECTION actor;
 };
 
 struct FRAME_DATA
