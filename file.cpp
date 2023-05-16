@@ -148,13 +148,13 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 	*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 }
 
-void UpdateCutscene(CUTSCENE_DESCRIPTOR* cd, FRAME_DATA* player, long base, uchar* buf, ulong off)
+void UpdateCutscene(CUTSCENE_DESCRIPTOR* cd, FRAME_DATA* player, long base, uchar* buf)
 {
-	ulong space;
+	ulong off, space;
 
 	space = sizeof(CUTSCENE_DESCRIPTOR);
-	memcpy(&buf[off], cd, space);
-	off += space;
+	memcpy(buf, cd, space);
+	off = space;
 
 	for (int i = 0; i < base; i++)
 	{
@@ -249,7 +249,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long base, long frame
 				table = (ulong*)buf;
 				off = table[2 * number] + space;
 				memmove(&buf[off], &buf[off + old - space], size - off);
-				UpdateCutscene(&cd, player, base, buf, table[2 * number]);
+				UpdateCutscene(&cd, player, base, &buf[table[2 * number]]);
 				AdjustTable(number, space, table);
 
 				if (DumpCutsceneList(output, buf, size))
