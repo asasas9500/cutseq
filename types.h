@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma pack(push, 1)
+
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
@@ -116,3 +118,5 @@ struct CUTSCENE_DESCRIPTOR
 	NEW_CUTSCENE cut;
 	long ext;
 };
+
+#pragma pack(pop)
