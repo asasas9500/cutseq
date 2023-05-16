@@ -110,7 +110,7 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 	*space = sizeof(CUTSCENE_DESCRIPTOR);
 	curr = 0;
 	cut->camera_offset = *space;
-	*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
+	*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 
 	if (cfg->lara.idx != -1)
 	{
@@ -118,7 +118,7 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 		cut->actor_data[0].offset = *space;
 		cut->actor_data[0].objslot = 0;
 		cut->actor_data[0].nodes = (short)(player[curr].len - 1);
-		*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
+		*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 	}
 	else
 	{
@@ -133,7 +133,7 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 		cut->actor_data[i + 1].offset = *space;
 		cut->actor_data[i + 1].objslot = (short)cfg->actor.set[i].slot.cnt;
 		cut->actor_data[i + 1].nodes = (short)(player[curr].len - 1);
-		*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
+		*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 	}
 
 	for (int i = cfg->actor.idx + 1; i < 9; i++)
@@ -145,10 +145,10 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 
 	curr++;
 	cd->ext = *space;
-	*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].seq.Size();
+	*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 }
 
-void UpdateCutscene(CUTSCENE_DESCRIPTOR* cd, FRAME_DATA* player, uchar* buf, ulong off)
+void UpdateCutscene(CUTSCENE_DESCRIPTOR* cd, FRAME_DATA* player, long base, uchar* buf, ulong off)
 {
 	ulong space;
 
@@ -156,16 +156,13 @@ void UpdateCutscene(CUTSCENE_DESCRIPTOR* cd, FRAME_DATA* player, uchar* buf, ulo
 	memcpy(&buf[off], cd, space);
 	off += space;
 
-	for (int i = 0; i < 11; i++)
+	for (int i = 0; i < base; i++)
 	{
-		if (!player[i].len)
-			break;
-
 		space = player[i].len * sizeof(NODELOADHEADER);
 		memcpy(&buf[off], player[i].header, space);
 		off += space;
-		space = player[i].seq.Size() * sizeof(uchar);
-		memcpy(&buf[off], player[i].seq.GetArray(), space);
+		space = player[i].end * sizeof(uchar);
+		memcpy(&buf[off], player[i].seq, space);
 		off += space;
 	}
 }
@@ -215,7 +212,7 @@ void AdjustTable(long number, ulong space, ulong* table)
 		table[2 * i] = table[2 * i - 2] + table[2 * i - 1];
 }
 
-long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
+long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long base, long frames)
 {
 	CUTSCENE_DESCRIPTOR cd;
 	ulong* table;
@@ -252,7 +249,7 @@ long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames)
 				table = (ulong*)buf;
 				off = table[2 * number] + space;
 				memmove(&buf[off], &buf[off + old - space], size - off);
-				UpdateCutscene(&cd, player, buf, table[2 * number]);
+				UpdateCutscene(&cd, player, base, buf, table[2 * number]);
 				AdjustTable(number, space, table);
 
 				if (DumpCutsceneList(output, buf, size))

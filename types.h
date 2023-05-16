@@ -107,7 +107,8 @@ struct FRAME_DATA
 {
 	NODELOADHEADER* header;
 	long len;
-	FbxArray<uchar> seq;
+	uchar* seq;
+	long end;
 };
 
 struct CUTSCENE_DESCRIPTOR

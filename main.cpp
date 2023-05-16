@@ -19,9 +19,9 @@ int main(int argc, char** argv)
 {
 	SETUP_STRUCT cfg;
 	OPENFILENAME dialog;
-	FRAME_DATA player[12];
+	FRAME_DATA* player;
 	char* filename;
-	long frames, r;
+	long frames, r, base;
 	char script[MAX_PATH];
 
 	r = 0;
@@ -59,17 +59,30 @@ int main(int argc, char** argv)
 
 	if ((argc == 2 || GetOpenFileName(&dialog)) && GetConfiguration(filename, &cfg))
 	{
-		for (int i = 0; i < 12; i++)
+		base = cfg.lara.idx + cfg.actor.idx + 4;
+		player = (FRAME_DATA*)malloc(base * sizeof(FRAME_DATA));
+
+		if (player)
 		{
-			player[i].header = NULL;
-			player[i].len = 0;
+			for (int i = 0; i < base; i++)
+			{
+				player[i].header = NULL;
+				player[i].len = 0;
+				player[i].seq = NULL;
+				player[i].end = 0;
+			}
+
+			if (ConvertScene(filename, &cfg, base, player, &frames) && RecordCutscene(&cfg, player, base, frames))
+				r = 1;
+
+			for (int i = 0; i < base; i++)
+			{
+				free(player[i].header);
+				free(player[i].seq);
+			}
+
+			free(player);
 		}
-
-		if (ConvertScene(filename, &cfg, player, &frames) && RecordCutscene(&cfg, player, frames))
-			r = 1;
-
-		for (int i = 0; i < 12; i++)
-			free(player[i].header);
 	}
 
 	if (r)
