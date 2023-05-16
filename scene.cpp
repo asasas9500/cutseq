@@ -126,9 +126,6 @@ long FillActorArray(SETUP_STRUCT* cfg, FbxNode* root, FbxNode** actor)
 		curr++;
 	}
 
-	for (int i = curr; i < 10; i++)
-		actor[i] = NULL;
-
 	return 1;
 }
 
@@ -489,7 +486,7 @@ long ConvertScene(const char* filename, SETUP_STRUCT* cfg, long base, FRAME_DATA
 	FbxAnimLayer* layer;
 	FbxNode* root;
 	FbxNode* cam;
-	FbxNode* actor[10];
+	FbxNode** actor;
 	long r;
 	char input[MAX_PATH];
 
@@ -505,8 +502,15 @@ long ConvertScene(const char* filename, SETUP_STRUCT* cfg, long base, FRAME_DATA
 		{
 			if (cam->GetTarget())
 			{
-				if (FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, base, player))
-					r = 1;
+				actor = (FbxNode**)malloc((base - 2) * sizeof(FbxNode*));
+
+				if (actor)
+				{
+					if (FillActorArray(cfg, root, actor) && PackScene(layer, cam, actor, *frames, base, player))
+						r = 1;
+
+					free(actor);
+				}
 			}
 			else
 				ShowError("Target for camera node must be set");
