@@ -29,7 +29,13 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 		if (cfg->options.idx < 1)
 		{
 			if (entry == NULL && value == NULL)
+			{
 				cfg->options.idx++;
+				cfg->options.set.number.on = 0;
+				cfg->options.set.camera.on = 0;
+				cfg->options.set.origin.on = 0;
+				cfg->options.set.audio.on = 0;
+			}
 			else if (!_stricmp(entry, "number"))
 			{
 				if (!cfg->options.set.number.on)
@@ -121,7 +127,10 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 		if (cfg->lara.idx < 1)
 		{
 			if (entry == NULL && value == NULL)
+			{
 				cfg->lara.idx++;
+				cfg->lara.set.name.on = 0;
+			}
 			else if (!_stricmp(entry, "name"))
 			{
 				if (!cfg->lara.set.name.on)
@@ -144,7 +153,11 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 		if (cfg->actor.idx < 9)
 		{
 			if (entry == NULL && value == NULL)
+			{
 				cfg->actor.idx++;
+				cfg->actor.set[cfg->actor.idx].name.on = 0;
+				cfg->actor.set[cfg->actor.idx].slot.on = 0;
+			}
 			else if (!_stricmp(entry, "name"))
 			{
 				if (!cfg->actor.set[cfg->actor.idx].name.on)
