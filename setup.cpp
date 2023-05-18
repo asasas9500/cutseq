@@ -187,8 +187,20 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 
 void InitialiseConfiguration(SETUP_STRUCT* cfg)
 {
+	cfg->options.set.number.on = 0;
+	cfg->options.set.camera.on = 0;
+	cfg->options.set.origin.on = 0;
+	cfg->options.set.audio.on = 0;
 	cfg->options.idx = -1;
+	cfg->lara.set.name.on = 0;
 	cfg->lara.idx = -1;
+
+	for (int i = 0; i < 9; i++)
+	{
+		cfg->actor.set[i].name.on = 0;
+		cfg->actor.set[i].slot.on = 0;
+	}
+
 	cfg->actor.idx = -1;
 }
 
