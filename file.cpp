@@ -80,12 +80,10 @@ long CheckSignature(uchar* buf)
 	return 0;
 }
 
-void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCENE_DESCRIPTOR* cd, ulong* space)
+void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, ulong cap, NEW_CUTSCENE* cut, ulong* space)
 {
-	NEW_CUTSCENE* cut;
 	long curr;
 
-	cut = &cd->cut;
 	cut->numactors = cfg->actor.idx + 2;
 	cut->numframes = (short)frames;
 
@@ -107,10 +105,9 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 	else
 		cut->audio_track = -1;
 
-	*space = sizeof(CUTSCENE_DESCRIPTOR);
 	curr = 0;
-	cut->camera_offset = *space;
-	*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
+	cut->camera_offset = cap;
+	*space = cap + player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 
 	if (cfg->lara.idx != -1)
 	{
@@ -136,25 +133,17 @@ void PrepareCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long frames, CUTSCEN
 		*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 	}
 
-	for (int i = cfg->actor.idx + 1; i < 9; i++)
-	{
-		cut->actor_data[i + 1].offset = -1;
-		cut->actor_data[i + 1].objslot = -1;
-		cut->actor_data[i + 1].nodes = -1;
-	}
-
 	curr++;
-	cd->ext = *space;
+	cut->actor_data[cut->numactors].offset = *space;
 	*space += player[curr].len * sizeof(NODELOADHEADER) + player[curr].end * sizeof(uchar);
 }
 
-void UpdateCutscene(CUTSCENE_DESCRIPTOR* cd, FRAME_DATA* player, long base, uchar* buf)
+void UpdateCutscene(NEW_CUTSCENE* cut, ulong cap, FRAME_DATA* player, long base, uchar* buf)
 {
 	ulong off, space;
 
-	space = sizeof(CUTSCENE_DESCRIPTOR);
-	memcpy(buf, cd, space);
-	off = space;
+	memcpy(buf, cut, cap);
+	off = cap;
 
 	for (int i = 0; i < base; i++)
 	{
@@ -214,52 +203,60 @@ void AdjustTable(long number, ulong space, ulong* table)
 
 long RecordCutscene(SETUP_STRUCT* cfg, FRAME_DATA* player, long base, long frames)
 {
-	CUTSCENE_DESCRIPTOR cd;
+	NEW_CUTSCENE* cut;
 	ulong* table;
 	uchar* buf;
 	uchar* ptr;
-	ulong size, space, old, off;
+	ulong size, space, old, off, cap;
 	long number, r;
 	char output[MAX_PATH];
 
 	r = 0;
-	GetModuleFileName(NULL, output, MAX_PATH);
-	PathRemoveFileSpec(output);
-	PathAppend(output, "cutseq.pak");
-	buf = NULL;
+	cap = sizeof(NEW_CUTSCENE) + (cfg->actor.idx - 8) * sizeof(ACTORME) + sizeof(long);
+	cut = (NEW_CUTSCENE*)malloc(cap);
 
-	if (LoadCutsceneList(output, &buf, &size))
+	if (cut)
 	{
-		if (CheckSignature(buf))
+		GetModuleFileName(NULL, output, MAX_PATH);
+		PathRemoveFileSpec(output);
+		PathAppend(output, "cutseq.pak");
+		buf = NULL;
+
+		if (LoadCutsceneList(output, &buf, &size))
 		{
-			table = (ulong*)buf;
-			PrepareCutscene(cfg, player, frames, &cd, &space);
-			number = cfg->options.set.number.cnt;
-			old = table[2 * number + 1];
-			size += space - old;
-
-			if (space > old)
-				ptr = (uchar*)realloc(buf, size);
-			else
-				ptr = buf;
-
-			if (ptr)
+			if (CheckSignature(buf))
 			{
-				buf = ptr;
 				table = (ulong*)buf;
-				off = table[2 * number] + space;
-				memmove(&buf[off], &buf[off + old - space], size - off);
-				UpdateCutscene(&cd, player, base, &buf[table[2 * number]]);
-				AdjustTable(number, space, table);
+				PrepareCutscene(cfg, player, frames, cap, cut, &space);
+				number = cfg->options.set.number.cnt;
+				old = table[2 * number + 1];
+				size += space - old;
 
-				if (DumpCutsceneList(output, buf, size))
-					r = 1;
+				if (space > old)
+					ptr = (uchar*)realloc(buf, size);
+				else
+					ptr = buf;
+
+				if (ptr)
+				{
+					buf = ptr;
+					table = (ulong*)buf;
+					off = table[2 * number] + space;
+					memmove(&buf[off], &buf[off + old - space], size - off);
+					UpdateCutscene(cut, cap, player, base, &buf[table[2 * number]]);
+					AdjustTable(number, space, table);
+
+					if (DumpCutsceneList(output, buf, size))
+						r = 1;
+				}
 			}
+			else
+				ShowError("cutseq.pak signature must match");
 		}
-		else
-			ShowError("cutseq.pak signature must match");
+
+		free(buf);
+		free(cut);
 	}
 
-	free(buf);
 	return r;
 }

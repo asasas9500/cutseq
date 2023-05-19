@@ -113,10 +113,4 @@ struct FRAME_DATA
 	long end;
 };
 
-struct CUTSCENE_DESCRIPTOR
-{
-	NEW_CUTSCENE cut;
-	long ext;
-};
-
 #pragma pack(pop)
