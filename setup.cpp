@@ -141,7 +141,7 @@ long ConfigurationHandler(void* data, const char* section, const char* entry, co
 	}
 	else if (!_stricmp(section, "actor"))
 	{
-		if (cfg->actor.idx < 9)
+		if (cfg->actor.idx < 99)
 		{
 			if (entry == NULL && value == NULL)
 				cfg->actor.idx++;
@@ -195,7 +195,7 @@ void InitialiseConfiguration(SETUP_STRUCT* cfg)
 	cfg->lara.set.name.on = 0;
 	cfg->lara.idx = -1;
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 99; i++)
 	{
 		cfg->actor.set[i].name.on = 0;
 		cfg->actor.set[i].slot.on = 0;
@@ -212,8 +212,8 @@ long CheckConfiguration(SETUP_STRUCT* cfg)
 	if (cfg->lara.idx > 0)
 		cfg->lara.idx = 0;
 
-	if (cfg->actor.idx > 8)
-		cfg->actor.idx = 8;
+	if (cfg->actor.idx > 98)
+		cfg->actor.idx = 98;
 
 	if (cfg->options.idx == -1)
 	{

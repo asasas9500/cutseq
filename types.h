@@ -94,7 +94,7 @@ struct LARA_COLLECTION
 
 struct ACTOR_COLLECTION
 {
-	ACTOR_SET set[9];
+	ACTOR_SET set[99];
 	char idx;
 };
 
